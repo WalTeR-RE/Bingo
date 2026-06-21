@@ -1,0 +1,42 @@
+# ============================================================
+# End-to-end overlay: adds DVWA (scan target) + the Bingo AI
+# agent to the main stack's network so the agent can scan DVWA
+# internally and POST findings to the Laravel backend.
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.agent.yml up -d db app webserver dvwa
+#   docker compose -f docker-compose.yml -f docker-compose.agent.yml run --rm agent python docker_scan.py
+# ============================================================
+services:
+  dvwa:
+    image: vulnerables/web-dvwa:latest   # self-contained (bundles MySQL)
+    container_name: bingo-dvwa
+    restart: unless-stopped
+    ports:
+      - "4280:80"                        # reachable on the host at http://localhost:4280
+    networks:
+      - bingo-net                        # also reachable inside the stack as http://dvwa
+
+  agent:
+    build:
+      context: ./Ai-Agent
+      dockerfile: Dockerfile
+    image: bingo-agent:latest
+    container_name: bingo-agent
+    working_dir: /app
+    volumes:
+      - ./Ai-Agent:/app
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - TARGET=http://dvwa
+      - BINGO_TARGET_PROFILE=${BINGO_TARGET_PROFILE:-}
+      # Inside the network the Laravel API is the nginx 'webserver' on port 80
+      - BINGO_API_URL=http://webserver/api
+      - BINGO_ACCESS_TOKEN=${BINGO_ACCESS_TOKEN:-}
+      - REPORTING_API_KEY=${BINGO_ACCESS_TOKEN:-}
+    depends_on:
+      - dvwa
+    networks:
+      - bingo-net
+    # No default command — invoke explicitly via `docker compose run`.
+    command: ["bash"]

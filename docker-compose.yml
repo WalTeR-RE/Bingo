@@ -1,0 +1,88 @@
+services:
+  app:
+    build:
+      context: ./Back-end
+      dockerfile: Dockerfile
+    container_name: bingo-app
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./Back-end:/var/www
+      - ./Back-end/storage:/var/www/storage
+      - ./Back-end/docker/php.ini:/usr/local/etc/php/conf.d/99-custom.ini
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_DATABASE=bingo_db
+      - DB_USERNAME=bingo_user
+      - DB_PASSWORD=bingo_secret
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - bingo-net
+
+  webserver:
+    image: nginx:1.25-alpine
+    container_name: bingo-webserver
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - ./Back-end:/var/www
+      - ./Back-end/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
+    networks:
+      - bingo-net
+
+  db:
+    image: mysql:8.0
+    container_name: bingo-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: bingo_db
+      MYSQL_USER: bingo_user
+      MYSQL_PASSWORD: bingo_secret
+      MYSQL_ROOT_PASSWORD: bingo_root_secret
+    ports:
+      - "3307:3306"
+    volumes:
+      - bingo-db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pbingo_root_secret"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - bingo-net
+
+  frontend:
+    image: nginx:1.25-alpine
+    container_name: bingo-frontend
+    restart: unless-stopped
+    ports:
+      - "5500:80"
+    volumes:
+      - ./Front-end:/usr/share/nginx/html:ro
+      - ./Front-end/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - bingo-net
+
+  mailpit:
+    image: axllent/mailpit
+    container_name: bingo-mailpit
+    restart: unless-stopped
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+    networks:
+      - bingo-net
+
+networks:
+  bingo-net:
+    driver: bridge
+
+volumes:
+  bingo-db-data:
+    driver: local

@@ -1,0 +1,45 @@
+# ── Secrets / environment ──────────────────────────────
+.env
+**/.env
+*.key
+*.pem
+
+# ── Python ─────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+
+# ── PHP / Node dependencies ────────────────────────────
+vendor/
+node_modules/
+composer.phar
+
+# ── Runtime artifacts ──────────────────────────────────
+Ai-Agent/output/
+Ai-Agent/logs/
+logs/
+*.log
+
+# ── RAG index (rebuilt from knowledge_base on first scan) ─
+Ai-Agent/Offensive-Agent/faiss_index/
+Ai-Agent/Offensive-Agent/chroma_db/
+
+# ── Wordlists (multi-GB external dependency, clone separately) ─
+SecLists/
+
+# ── Datasets / training artifacts (regenerable) ────────
+dataset/
+*.csv
+Testing_WAF/*.pkl
+
+# ── Tooling / IDE / OS ─────────────────────────────────
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+desktop.ini
