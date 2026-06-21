@@ -16,6 +16,14 @@ full reconnaissance-to-exploitation pipeline; you ask it to defend, and it bring
 up a real-time WAF that classifies and blocks malicious traffic. Every result is
 reported to a Laravel dashboard over an authenticated API.
 
+## Demo & presentations
+
+| | |
+|---|---|
+| 🎥 **Demo video** | [Watch Bingo run end to end](https://drive.google.com/file/d/11vglVXcyAK_IX91whRJ4AOZbXJNFWezb/view?usp=sharing) |
+| 📊 **Final presentation** | [The implemented system and its results](https://docs.google.com/presentation/d/1VFlu8H1Ll0I5NrbiIJ352Nb6dGb9VVJH4m9Lboqv53g/edit?usp=sharing) — post-implementation |
+| 📐 **Proposal presentation** | [Initial design, goals, and intended approach](https://docs.google.com/presentation/d/18tNzZYOs07I_yXE8rImJk3Vu12cgsU2OpdJJQfxudFw/edit?usp=sharing) — pre-implementation, theoretical |
+
 ---
 
 ## Architecture
