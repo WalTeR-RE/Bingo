@@ -190,5 +190,6 @@ without permission is illegal. The authors accept no liability for misuse.
 
 ## License
 
-Released for academic and educational use. Add your chosen license in a `LICENSE`
-file before distribution.
+Released under the [MIT License](LICENSE) © 2026 Bingo-Team. Note that
+permissive licensing covers copyright only — it does not authorize unlawful use
+(see the disclaimer above).
