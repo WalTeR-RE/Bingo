@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Bingo Agent | Dashboard</title>
+  <link rel="icon"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%230066ff'%3E%3Cpath fill-rule='evenodd' d='M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z' clip-rule='evenodd'/%3E%3C/svg%3E">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { mono: ["Inter", "sans-serif"] },
+          colors: { brand: { blue: "#0066ff", cyan: "#00a8e8", dark: "#0f172a" } },
+          boxShadow: { 'glow': '0 0 20px rgba(0, 102, 255, 0.15)' },
+          animation: { 'slide-up': 'slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1)' },
+          keyframes: { slideUp: { '0%': { transform: 'translateY(20px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } } }
+        },
+      },
+    };
+  </script>
+</head>
+
+<body class="bg-slate-50 dark:bg-slate-900 font-mono text-slate-800 dark:text-slate-200 antialiased selection:bg-brand-blue selection:text-white">
+
+  <div class="flex h-screen overflow-hidden">
+    <!-- Sidebar -->
+    <aside id="sidebar" class="w-72 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex flex-col z-20 shadow-xl flex-shrink-0"></aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-8 lg:p-12 overflow-y-auto">
+      <div id="page-header"></div>
+
+      <!-- Time Range Filter -->
+      <div class="flex items-center gap-2 mb-8">
+        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Time Range:</span>
+        <div class="flex bg-slate-100 dark:bg-slate-700 rounded-xl p-1 gap-1" id="time-range-btns">
+          <button data-range="7d" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors bg-brand-blue text-white">7D</button>
+          <button data-range="30d" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors text-slate-500 dark:text-slate-400 hover:text-brand-blue">30D</button>
+          <button data-range="90d" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors text-slate-500 dark:text-slate-400 hover:text-brand-blue">90D</button>
+          <button data-range="all" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors text-slate-500 dark:text-slate-400 hover:text-brand-blue">All</button>
+        </div>
+      </div>
+
+      <!-- Stat Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-10" id="stat-cards">
+        <!-- filled by JS -->
+      </div>
+
+      <!-- Agent Status Panel -->
+      <div class="mb-10" id="agent-section">
+        <h3 class="text-lg font-bold text-brand-dark dark:text-white mb-4 flex items-center gap-2">
+          <svg class="h-5 w-5 text-brand-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/></svg>
+          Agent Status
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4" id="agent-cards">
+          <div class="text-center py-8 text-slate-400 col-span-full">No agents connected yet</div>
+        </div>
+      </div>
+
+      <!-- Charts Row -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
+          <h3 class="text-sm font-bold text-slate-600 dark:text-slate-300 mb-4 uppercase tracking-wider">Severity Distribution</h3>
+          <div class="h-64 flex items-center justify-center"><canvas id="chart-severity"></canvas></div>
+        </div>
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
+          <h3 class="text-sm font-bold text-slate-600 dark:text-slate-300 mb-4 uppercase tracking-wider">Incidents Timeline</h3>
+          <div class="h-64"><canvas id="chart-incidents"></canvas></div>
+        </div>
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
+          <h3 class="text-sm font-bold text-slate-600 dark:text-slate-300 mb-4 uppercase tracking-wider">Scans Per Month</h3>
+          <div class="h-64"><canvas id="chart-scans"></canvas></div>
+        </div>
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
+          <h3 class="text-sm font-bold text-slate-600 dark:text-slate-300 mb-4 uppercase tracking-wider">Top Affected Assets</h3>
+          <div class="h-64"><canvas id="chart-assets"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+          <h3 class="text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Recent Activity</h3>
+          <a href="Settings.html?tab=audit" class="text-xs text-brand-blue font-semibold hover:underline">View All</a>
+        </div>
+        <div id="recent-activity" class="divide-y divide-slate-100 dark:divide-slate-700"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/components.js"></script>
+  <script>
+    if (!requireAuth()) throw '';
+
+    renderSidebar('Dashboard');
+    renderHeader('Security Management Dashboard', 'Monitor scans, manage vulnerabilities, and export reports.');
+
+    let currentRange = '7d';
+    let charts = {};
+
+    document.getElementById('time-range-btns').addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-range]');
+      if (!btn) return;
+      currentRange = btn.dataset.range;
+      document.querySelectorAll('#time-range-btns button').forEach(b => {
+        b.classList.remove('bg-brand-blue', 'text-white');
+        b.classList.add('text-slate-500', 'dark:text-slate-400');
+      });
+      btn.classList.add('bg-brand-blue', 'text-white');
+      btn.classList.remove('text-slate-500', 'dark:text-slate-400');
+      loadDashboard();
+    });
+
+    loadDashboard();
+
+    async function loadDashboard() {
+      try {
+        const res = await API.dashboard.stats(`range=${currentRange}`);
+        /* Backend returns: { reports: {total_reports,...}, vulnerabilities: {total_vulnerabilities, critical,...}, incidents: {total_incidents,...}, agents, charts: {severity_distribution, incidents_timeline, scans_per_month, top_assets}, recent_activity } */
+        const d = {
+          total_reports: res.reports?.total_reports ?? 0,
+          total_vulns: res.vulnerabilities?.total_vulnerabilities ?? 0,
+          critical_vulns: res.vulnerabilities?.critical ?? 0,
+          total_incidents: res.incidents?.total_incidents ?? 0,
+          agents: res.agents ?? [],
+          severity_distribution: res.charts?.severity_distribution ?? {},
+          incidents_timeline: res.charts?.incidents_timeline ?? {},
+          scans_per_month: res.charts?.scans_per_month ?? {},
+          top_assets: res.charts?.top_assets ?? {},
+          recent_activity: res.recent_activity ?? [],
+        };
+
+        const cards = [
+          { label: 'Total Reports', value: d.total_reports, color: 'blue', border: 'border-brand-blue', iconColor: 'text-brand-blue', bgIcon: 'bg-blue-50 dark:bg-blue-500/10', hoverBg: 'group-hover:bg-brand-blue', icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>' },
+          { label: 'Vulnerabilities', value: d.total_vulns, color: 'yellow', border: 'border-yellow-400', iconColor: 'text-yellow-700 dark:text-yellow-400', bgIcon: 'bg-yellow-100 dark:bg-yellow-500/10', hoverBg: 'group-hover:bg-yellow-500', icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>' },
+          { label: 'Critical', value: d.critical_vulns, color: 'red', border: 'border-red-500', iconColor: 'text-red-500 dark:text-red-400', bgIcon: 'bg-red-50 dark:bg-red-500/10', hoverBg: 'group-hover:bg-red-500', icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>' },
+          { label: 'Incidents', value: d.total_incidents, color: 'emerald', border: 'border-emerald-500', iconColor: 'text-emerald-500 dark:text-emerald-400', bgIcon: 'bg-emerald-50 dark:bg-emerald-500/10', hoverBg: 'group-hover:bg-emerald-500', icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>' },
+        ];
+        document.getElementById('stat-cards').innerHTML = cards.map(c => `
+          <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border-l-4 ${c.border} hover:shadow-glow transition-all duration-300 group animate-slide-up">
+            <div class="flex justify-between items-start mb-4">
+              <div class="p-3 ${c.bgIcon} ${c.iconColor} rounded-xl ${c.hoverBg} group-hover:text-white transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">${c.icon}</svg>
+              </div>
+            </div>
+            <p class="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">${c.label}</p>
+            <p class="text-4xl font-bold text-brand-dark dark:text-white">${c.value ?? 0}</p>
+          </div>
+        `).join('');
+
+        if (d.agents && d.agents.length) {
+          document.getElementById('agent-cards').innerHTML = d.agents.map(a => `
+            <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 flex items-center gap-4">
+              <div class="relative">
+                <div class="h-10 w-10 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
+                  <svg class="h-5 w-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/></svg>
+                </div>
+                <span class="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-white dark:border-slate-800 ${a.is_online ? 'bg-emerald-500' : 'bg-slate-400'}"></span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="font-bold text-sm text-slate-800 dark:text-white truncate">${escHtml(a.agent_name)}</p>
+                <p class="text-xs text-slate-400 truncate">${escHtml(a.ip_address || '—')}</p>
+              </div>
+              <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full ${a.is_online ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400' : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400'}">${a.is_online ? 'Online' : 'Offline'}</span>
+            </div>
+          `).join('');
+        }
+
+        renderCharts(d);
+
+        if (d.recent_activity && d.recent_activity.length) {
+          document.getElementById('recent-activity').innerHTML = d.recent_activity.map(a => `
+            <div class="px-6 py-4 flex items-center gap-4 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+              <div class="h-8 w-8 rounded-full bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center shrink-0">
+                <svg class="h-4 w-4 text-brand-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm text-slate-800 dark:text-white font-semibold truncate">${escHtml(a.action)}</p>
+                <p class="text-xs text-slate-400">${escHtml(a.entity_type || '')} ${a.entity_id ? '#' + a.entity_id.slice(0,8) : ''}</p>
+              </div>
+              <span class="text-xs text-slate-400 shrink-0">${timeAgo(a.created_at)}</span>
+            </div>
+          `).join('');
+        } else {
+          document.getElementById('recent-activity').innerHTML = '<p class="text-center text-slate-400 text-sm py-8">No recent activity</p>';
+        }
+
+      } catch (err) {
+        showToast('Failed to load dashboard data', 'error');
+      }
+    }
+
+    function renderCharts(d) {
+      const isDark = DarkMode.isDark();
+      const gridColor = isDark ? 'rgba(148,163,184,0.1)' : 'rgba(0,0,0,0.05)';
+      const textColor = isDark ? '#94a3b8' : '#64748b';
+
+      if (charts.severity) charts.severity.destroy();
+      charts.severity = new Chart(document.getElementById('chart-severity'), {
+        type: 'doughnut',
+        data: {
+          labels: ['Critical', 'High', 'Medium', 'Low', 'Info'],
+          datasets: [{
+            data: [
+              d.severity_distribution?.critical || 0,
+              d.severity_distribution?.high || 0,
+              d.severity_distribution?.medium || 0,
+              d.severity_distribution?.low || 0,
+              d.severity_distribution?.informational || 0,
+            ],
+            backgroundColor: ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6'],
+            borderWidth: 0,
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: textColor, font: { family: 'Inter', size: 11 } } } } }
+      });
+
+      if (charts.incidents) charts.incidents.destroy();
+      const timeline = d.incidents_timeline || {};
+      charts.incidents = new Chart(document.getElementById('chart-incidents'), {
+        type: 'line',
+        data: {
+          labels: Object.keys(timeline),
+          datasets: [{
+            label: 'Incidents',
+            data: Object.values(timeline),
+            borderColor: '#0066ff',
+            backgroundColor: 'rgba(0,102,255,0.08)',
+            fill: true,
+            tension: 0.4,
+            pointRadius: 3,
+            pointBackgroundColor: '#0066ff',
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, scales: { x: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 10 } } }, y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor, font: { size: 10 } } } }, plugins: { legend: { display: false } } }
+      });
+
+      if (charts.scans) charts.scans.destroy();
+      const scans = d.scans_per_month || {};
+      charts.scans = new Chart(document.getElementById('chart-scans'), {
+        type: 'bar',
+        data: {
+          labels: Object.keys(scans),
+          datasets: [{
+            label: 'Scans',
+            data: Object.values(scans),
+            backgroundColor: '#00a8e8',
+            borderRadius: 6,
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, scales: { x: { grid: { display: false }, ticks: { color: textColor, font: { size: 10 } } }, y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor, font: { size: 10 } } } }, plugins: { legend: { display: false } } }
+      });
+
+      if (charts.assets) charts.assets.destroy();
+      const assets = d.top_assets || {};
+      charts.assets = new Chart(document.getElementById('chart-assets'), {
+        type: 'bar',
+        data: {
+          labels: Object.keys(assets),
+          datasets: [{
+            label: 'Vulns',
+            data: Object.values(assets),
+            backgroundColor: '#6366f1',
+            borderRadius: 6,
+          }]
+        },
+        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor, font: { size: 10 } } }, y: { grid: { display: false }, ticks: { color: textColor, font: { size: 10 } } } }, plugins: { legend: { display: false } } }
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Bingo Agent | Reports</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%230066ff'%3E%3Cpath fill-rule='evenodd' d='M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z' clip-rule='evenodd'/%3E%3C/svg%3E">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { mono: ["Inter", "sans-serif"] },
+          colors: { brand: { blue: "#0066ff", cyan: "#00a8e8", dark: "#0f172a" } },
+          boxShadow: { 'glow': '0 0 20px rgba(0, 102, 255, 0.15)' },
+          animation: { 'slide-up': 'slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1)' },
+          keyframes: { slideUp: { '0%': { transform: 'translateY(20px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } } }
+        },
+      },
+    };
+  </script>
+</head>
+
+<body class="bg-slate-50 dark:bg-slate-900 font-mono text-slate-800 dark:text-slate-200 antialiased selection:bg-brand-blue selection:text-white">
+  <div class="flex h-screen overflow-hidden">
+    <aside id="sidebar" class="w-72 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex flex-col z-20 shadow-xl flex-shrink-0"></aside>
+
+    <main class="flex-1 p-8 lg:p-12 overflow-y-auto">
+      <div id="page-header"></div>
+
+      <!-- Tabs -->
+      <div class="flex border-b border-slate-200 dark:border-slate-700 mb-8">
+        <button id="tab-reports" class="px-6 py-3 text-sm font-bold border-b-2 border-brand-blue text-brand-blue transition-colors" onclick="switchTab('reports')">
+          Offensive Reports
+        </button>
+        <button id="tab-siem" class="px-6 py-3 text-sm font-bold border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-brand-blue transition-colors" onclick="switchTab('siem')">
+          Defensive SIEM
+        </button>
+      </div>
+
+      <!-- ═══ REPORTS TAB ═══ -->
+      <div id="panel-reports">
+        <div class="flex items-center gap-3 mb-6">
+          <select id="report-status-filter" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-blue">
+            <option value="">All Status</option>
+            <option value="open">Open</option>
+            <option value="completed">Completed</option>
+            <option value="in_progress">In Progress</option>
+          </select>
+          <select id="report-type-filter" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-blue">
+            <option value="">All Types</option>
+            <option value="full">Full Scan</option>
+            <option value="quick">Quick Scan</option>
+            <option value="targeted">Targeted</option>
+            <option value="recon">Recon</option>
+          </select>
+        </div>
+
+        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-50 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider text-xs border-b border-slate-200 dark:border-slate-700">
+              <tr>
+                <th class="p-4 text-left">Report Name</th>
+                <th class="p-4 text-left">Target</th>
+                <th class="p-4 text-left">Type</th>
+                <th class="p-4 text-left">Vulns</th>
+                <th class="p-4 text-left">Status</th>
+                <th class="p-4 text-left">Date</th>
+                <th class="p-4 text-left">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="reports-tbody" class="divide-y divide-slate-100 dark:divide-slate-700"></tbody>
+          </table>
+        </div>
+        <div id="reports-pagination" class="mt-4 flex justify-center"></div>
+      </div>
+
+      <!-- ═══ SIEM TAB ═══ -->
+      <div id="panel-siem" class="hidden">
+        <div class="flex flex-wrap items-center gap-3 mb-6">
+          <select id="inc-severity" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-blue">
+            <option value="">All Severity</option>
+            <option value="critical">Critical</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+          </select>
+          <select id="inc-status" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-blue">
+            <option value="">All Status</option>
+            <option value="new">New</option>
+            <option value="investigating">Investigating</option>
+            <option value="resolved">Resolved</option>
+            <option value="false_positive">False Positive</option>
+            <option value="escalated">Escalated</option>
+          </select>
+          <input id="inc-search" type="text" placeholder="Search incidents…" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-blue w-56 placeholder-slate-400" />
+        </div>
+
+        <div class="space-y-3" id="incidents-list"></div>
+        <div id="incidents-pagination" class="mt-4 flex justify-center"></div>
+      </div>
+
+      <!-- ═══ INCIDENT DETAIL MODAL ═══ -->
+      <div id="incident-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
+        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeModal('incident-modal')"></div>
+        <div class="relative bg-white dark:bg-slate-800 w-full max-w-2xl mx-4 rounded-2xl shadow-2xl overflow-hidden animate-slide-up max-h-[85vh] flex flex-col">
+          <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700 shrink-0">
+            <h3 class="text-lg font-bold text-slate-900 dark:text-white" id="inc-modal-title">Incident</h3>
+            <button onclick="closeModal('incident-modal')" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+          <div class="px-6 py-5 overflow-y-auto flex-1" id="inc-modal-body"></div>
+          <div class="px-6 py-4 border-t border-slate-200 dark:border-slate-700 shrink-0" id="inc-modal-footer">
+            <form id="note-form" class="flex gap-2">
+              <input id="note-input" type="text" placeholder="Add investigation note…" class="flex-1 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-blue dark:text-white" />
+              <button type="submit" class="bg-brand-blue text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:opacity-90 transition-opacity">Add</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/components.js"></script>
+  <script>
+    if (!requireAuth()) throw '';
+
+    renderSidebar('Reports');
+    renderHeader('Reports & SIEM', 'View scan reports and monitor security incidents.');
+
+    let reportPage = 1, incidentPage = 1;
+    let currentIncidentId = null;
+    const deepLinkIncidentId = new URLSearchParams(window.location.search).get('incident');
+    let deepLinkHandled = false;
+
+    function switchTab(tab) {
+      const isReports = tab === 'reports';
+      document.getElementById('panel-reports').classList.toggle('hidden', !isReports);
+      document.getElementById('panel-siem').classList.toggle('hidden', isReports);
+      document.getElementById('tab-reports').classList.toggle('border-brand-blue', isReports);
+      document.getElementById('tab-reports').classList.toggle('text-brand-blue', isReports);
+      document.getElementById('tab-reports').classList.toggle('border-transparent', !isReports);
+      document.getElementById('tab-reports').classList.toggle('text-slate-500', !isReports);
+      document.getElementById('tab-siem').classList.toggle('border-brand-blue', !isReports);
+      document.getElementById('tab-siem').classList.toggle('text-brand-blue', !isReports);
+      document.getElementById('tab-siem').classList.toggle('border-transparent', isReports);
+      document.getElementById('tab-siem').classList.toggle('text-slate-500', isReports);
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('tab') === 'siem') switchTab('siem');
+
+    document.getElementById('report-status-filter').addEventListener('change', () => { reportPage = 1; loadReports(); });
+    document.getElementById('report-type-filter').addEventListener('change', () => { reportPage = 1; loadReports(); });
+    let incTimer;
+    document.getElementById('inc-severity').addEventListener('change', () => { incidentPage = 1; loadIncidents(); });
+    document.getElementById('inc-status').addEventListener('change', () => { incidentPage = 1; loadIncidents(); });
+    document.getElementById('inc-search').addEventListener('input', () => { clearTimeout(incTimer); incTimer = setTimeout(() => { incidentPage = 1; loadIncidents(); }, 350); });
+
+    loadReports();
+    loadIncidents();
+
+    function reportLoadingRows(count = 4) {
+      return Array.from({ length: count }).map(() => `
+        <tr class="animate-pulse">
+          <td class="p-4"><div class="h-3 w-40 bg-slate-200 dark:bg-slate-700 rounded"></div></td>
+          <td class="p-4"><div class="h-3 w-28 bg-slate-200 dark:bg-slate-700 rounded"></div></td>
+          <td class="p-4"><div class="h-3 w-16 bg-slate-200 dark:bg-slate-700 rounded"></div></td>
+          <td class="p-4"><div class="h-3 w-20 bg-slate-200 dark:bg-slate-700 rounded"></div></td>
+          <td class="p-4"><div class="h-5 w-24 bg-slate-200 dark:bg-slate-700 rounded-full"></div></td>
+          <td class="p-4"><div class="h-3 w-20 bg-slate-200 dark:bg-slate-700 rounded"></div></td>
+          <td class="p-4"><div class="h-7 w-24 bg-slate-200 dark:bg-slate-700 rounded-lg"></div></td>
+        </tr>
+      `).join('');
+    }
+
+    function incidentLoadingCards(count = 3) {
+      return Array.from({ length: count }).map(() => `
+        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 animate-pulse">
+          <div class="flex items-center gap-2 mb-3">
+            <div class="h-5 w-20 bg-slate-200 dark:bg-slate-700 rounded-full"></div>
+            <div class="h-5 w-24 bg-slate-200 dark:bg-slate-700 rounded-full"></div>
+          </div>
+          <div class="h-4 w-2/3 bg-slate-200 dark:bg-slate-700 rounded mb-2"></div>
+          <div class="h-3 w-1/2 bg-slate-200 dark:bg-slate-700 rounded"></div>
+        </div>
+      `).join('');
+    }
+
+    async function loadReports() {
+      const tbody = document.getElementById('reports-tbody');
+      tbody.innerHTML = reportLoadingRows();
+      try {
+        const params = new URLSearchParams();
+        params.set('page', reportPage);
+        const status = document.getElementById('report-status-filter').value;
+        const type = document.getElementById('report-type-filter').value;
+        if (status) params.set('status', status);
+
+        const res = await API.reports.list(params.toString());
+        const reports = Array.isArray(res.data) ? res.data : [];
+        const hasScanType = reports.some(r => !!r.scan_type);
+        const filteredReports = (type && hasScanType)
+          ? reports.filter(r => (r.scan_type || '').toLowerCase() === type.toLowerCase())
+          : reports;
+
+        if (!filteredReports.length) {
+          tbody.innerHTML = '<tr><td colspan="7" class="text-center py-12 text-slate-400">No reports found</td></tr>';
+        } else {
+          tbody.innerHTML = filteredReports.map(r => {
+            const vulnCount = Number(r.vulnerabilities_count ?? r.vuln_count ?? 0) || 0;
+            const criticalCount = Number(r.critical_count ?? 0) || 0;
+            const highCount = Number(r.high_count ?? 0) || 0;
+            const badgeSeverity = vulnCount > 0
+              ? (criticalCount > 0 ? 'critical' : (highCount > 0 ? 'high' : 'medium'))
+              : 'informational';
+
+            return `
+            <tr class="hover:bg-blue-50/50 dark:hover:bg-slate-700/30 transition-colors">
+              <td class="p-4 font-bold text-slate-800 dark:text-white">${escHtml(r.name)}</td>
+              <td class="p-4 text-slate-500 dark:text-slate-400">${escHtml(r.target)}</td>
+              <td class="p-4"><span class="text-xs font-semibold uppercase tracking-wider text-slate-500">${r.scan_type || '—'}</span></td>
+              <td class="p-4">${severityBadge(badgeSeverity).replace(/>[^<]+</, `>${vulnCount} vulns<`)}</td>
+              <td class="p-4">${statusBadge(r.status)}</td>
+              <td class="p-4 text-slate-500 dark:text-slate-400 text-xs">${formatDate(r.completed_at || r.created_at)}</td>
+              <td class="p-4 flex gap-2">
+                <a href="ReportDetail.html?id=${r.id}" class="text-brand-blue font-bold text-xs uppercase tracking-wider bg-blue-50 dark:bg-blue-500/10 hover:bg-blue-100 dark:hover:bg-blue-500/20 px-3 py-1.5 rounded-lg transition-colors">View</a>
+                <button onclick="exportReport('${r.id}')" class="text-slate-500 hover:text-brand-blue text-xs font-bold uppercase tracking-wider px-2 py-1.5 rounded-lg transition-colors">PDF</button>
+              </td>
+            </tr>
+          `;
+          }).join('');
+        }
+
+        renderPagination(document.getElementById('reports-pagination'), res, (p) => { reportPage = p; loadReports(); });
+      } catch (err) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-12 text-red-400">Unable to load reports right now.</td></tr>';
+        document.getElementById('reports-pagination').innerHTML = '';
+        showToast('Failed to load reports', 'error');
+      }
+    }
+
+    async function loadIncidents() {
+      const list = document.getElementById('incidents-list');
+      list.innerHTML = incidentLoadingCards();
+      try {
+        const params = new URLSearchParams();
+        params.set('page', incidentPage);
+        const sev = document.getElementById('inc-severity').value;
+        const st  = document.getElementById('inc-status').value;
+        const q   = document.getElementById('inc-search').value.trim();
+        if (sev) params.set('severity', sev);
+        if (st)  params.set('status', st);
+        if (q)   params.set('search', q);
+
+        const res = await API.incidents.list(params.toString());
+        const incidents = res.data;
+
+        if (!incidents.length) {
+          list.innerHTML = '<div class="text-center py-12 text-slate-400">No incidents found</div>';
+        } else {
+          list.innerHTML = incidents.map(i => `
+            <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 hover:shadow-glow transition-all cursor-pointer" onclick="openIncident('${i.id}')">
+              <div class="flex items-start justify-between gap-4">
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2 mb-1">
+                    ${severityBadge(i.severity)}
+                    ${statusBadge(i.status)}
+                  </div>
+                  <h4 class="font-bold text-slate-800 dark:text-white text-sm mt-2">${escHtml(i.title)}</h4>
+                  <p class="text-xs text-slate-400 mt-1">${escHtml(i.rule_triggered || '')} &bull; ${escHtml(i.source_ip || '—')} &rarr; ${escHtml(i.destination_ip || '—')}</p>
+                </div>
+                <span class="text-xs text-slate-400 shrink-0">${timeAgo(i.detected_at || i.created_at)}</span>
+              </div>
+            </div>
+          `).join('');
+        }
+        renderPagination(document.getElementById('incidents-pagination'), res, (p) => { incidentPage = p; loadIncidents(); });
+
+        if (deepLinkIncidentId && !deepLinkHandled) {
+          deepLinkHandled = true;
+          openIncident(deepLinkIncidentId);
+        }
+      } catch (err) {
+        list.innerHTML = '<div class="text-center py-12 text-red-400">Unable to load incidents right now.</div>';
+        document.getElementById('incidents-pagination').innerHTML = '';
+        showToast('Failed to load incidents', 'error');
+      }
+    }
+
+    async function openIncident(id) {
+      currentIncidentId = id;
+      document.getElementById('inc-modal-title').textContent = 'Loading…';
+      document.getElementById('inc-modal-body').innerHTML = '';
+      openModal('incident-modal');
+
+      try {
+        const res = await API.incidents.show(id);
+        const i = res.incident;
+        document.getElementById('inc-modal-title').textContent = i.title;
+
+        let html = `
+        <div class="grid grid-cols-2 gap-4 mb-6 text-sm">
+          <div><span class="text-slate-400 text-xs font-bold uppercase">Severity</span><div class="mt-1">${severityBadge(i.severity)}</div></div>
+          <div><span class="text-slate-400 text-xs font-bold uppercase">Status</span><div class="mt-1">${statusBadge(i.status)}</div></div>
+          <div><span class="text-slate-400 text-xs font-bold uppercase">Source IP</span><p class="mt-1 font-semibold">${escHtml(i.source_ip || '—')}</p></div>
+          <div><span class="text-slate-400 text-xs font-bold uppercase">Destination IP</span><p class="mt-1 font-semibold">${escHtml(i.destination_ip || '—')}</p></div>
+          <div><span class="text-slate-400 text-xs font-bold uppercase">Rule Triggered</span><p class="mt-1 font-semibold">${escHtml(i.rule_triggered || '—')}</p></div>
+          <div><span class="text-slate-400 text-xs font-bold uppercase">Detected</span><p class="mt-1 font-semibold">${formatDateTime(i.detected_at)}</p></div>
+        </div>`;
+
+        if (i.description) {
+          html += `<div class="mb-6"><h4 class="text-xs font-bold text-slate-400 uppercase mb-2">Description</h4><p class="text-sm text-slate-700 dark:text-slate-300">${escHtml(i.description)}</p></div>`;
+        }
+
+        if (i.raw_log) {
+          html += `<div class="mb-6"><h4 class="text-xs font-bold text-slate-400 uppercase mb-2">Raw Log</h4><pre class="text-xs bg-slate-50 dark:bg-slate-900 p-4 rounded-xl overflow-x-auto text-slate-600 dark:text-slate-400">${escHtml(typeof i.raw_log === 'object' ? JSON.stringify(i.raw_log, null, 2) : i.raw_log)}</pre></div>`;
+        }
+
+        html += `<div class="mb-6 flex gap-2">
+          <button onclick="changeIncStatus('investigating')" class="px-3 py-1.5 bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 text-xs font-bold rounded-lg hover:bg-blue-100 transition-colors">Investigate</button>
+          <button onclick="changeIncStatus('resolved')" class="px-3 py-1.5 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-xs font-bold rounded-lg hover:bg-emerald-100 transition-colors">Resolve</button>
+          <button onclick="changeIncStatus('false_positive')" class="px-3 py-1.5 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 text-xs font-bold rounded-lg hover:bg-slate-200 transition-colors">Mark False Positive</button>
+        </div>`;
+
+        html += `<div><h4 class="text-xs font-bold text-slate-400 uppercase mb-3">Investigation Notes</h4>`;
+        if (i.notes && i.notes.length) {
+          html += `<div class="space-y-3 border-l-2 border-slate-200 dark:border-slate-700 pl-4">`;
+          i.notes.forEach(n => {
+            html += `
+            <div class="relative">
+              <div class="absolute -left-[22px] top-1 h-3 w-3 rounded-full bg-brand-blue border-2 border-white dark:border-slate-800"></div>
+              <p class="text-sm text-slate-800 dark:text-white">${escHtml(n.content)}</p>
+              <p class="text-[10px] text-slate-400 mt-1">${escHtml(n.user?.name || 'Admin')} &bull; ${timeAgo(n.created_at)}</p>
+            </div>`;
+          });
+          html += `</div>`;
+        } else {
+          html += `<p class="text-sm text-slate-400">No notes yet.</p>`;
+        }
+        html += `</div>`;
+
+        document.getElementById('inc-modal-body').innerHTML = html;
+      } catch (err) { showToast('Failed to load incident', 'error'); }
+    }
+
+    async function changeIncStatus(status) {
+      if (!currentIncidentId) return;
+      try {
+        await API.incidents.changeStatus(currentIncidentId, { status });
+        showToast(`Status changed to ${status}`);
+        openIncident(currentIncidentId);
+        loadIncidents();
+      } catch (err) { showToast(err.message || 'Failed', 'error'); }
+    }
+
+    document.getElementById('note-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const input = document.getElementById('note-input');
+      if (!input.value.trim() || !currentIncidentId) return;
+      try {
+        await API.incidents.addNote(currentIncidentId, { content: input.value.trim() });
+        input.value = '';
+        openIncident(currentIncidentId);
+        showToast('Note added');
+      } catch (err) { showToast(err.message || 'Failed', 'error'); }
+    });
+
+    async function exportReport(id) {
+      try {
+        const blob = await API.reports.exportPdf(id);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = `report-${id}.pdf`; a.click();
+        URL.revokeObjectURL(url);
+        showToast('PDF exported');
+      } catch { showToast('Export failed', 'error'); }
+    }
+  </script>
+</body>
+</html>

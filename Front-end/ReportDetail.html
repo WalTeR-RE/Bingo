@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Bingo Agent | Report Detail</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%230066ff'%3E%3Cpath fill-rule='evenodd' d='M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z' clip-rule='evenodd'/%3E%3C/svg%3E">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { mono: ["Inter", "sans-serif"] },
+          colors: { brand: { blue: "#0066ff", cyan: "#00a8e8", dark: "#0f172a" } },
+          boxShadow: { 'glow': '0 0 20px rgba(0, 102, 255, 0.15)' },
+          animation: { 'slide-up': 'slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1)' },
+          keyframes: { slideUp: { '0%': { transform: 'translateY(20px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } } }
+        },
+      },
+    };
+  </script>
+</head>
+
+<body class="bg-slate-50 dark:bg-slate-900 font-mono text-slate-800 dark:text-slate-200 antialiased selection:bg-brand-blue selection:text-white">
+  <div class="flex h-screen overflow-hidden">
+    <aside id="sidebar" class="w-72 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex flex-col z-20 shadow-xl flex-shrink-0"></aside>
+
+    <main class="flex-1 p-8 lg:p-12 overflow-y-auto">
+      <div id="page-header"></div>
+
+      <!-- Report Meta Card -->
+      <div id="report-meta" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm p-6 mb-8">
+        <div class="flex items-center justify-center py-12 text-slate-400">Loading report…</div>
+      </div>
+
+      <!-- Severity Stats Row -->
+      <div id="severity-stats" class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8"></div>
+
+      <!-- Vulnerabilities Section -->
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-bold text-slate-900 dark:text-white">Vulnerabilities</h3>
+        <button id="btn-add-vuln" class="bg-brand-blue text-white px-4 py-2 rounded-xl text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2">
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          Add Vulnerability
+        </button>
+      </div>
+
+      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-50 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider text-xs border-b border-slate-200 dark:border-slate-700">
+            <tr>
+              <th class="p-4 text-left">Name</th>
+              <th class="p-4 text-left">Severity</th>
+              <th class="p-4 text-left">CVSS</th>
+              <th class="p-4 text-left">Asset</th>
+              <th class="p-4 text-left">False Positive</th>
+              <th class="p-4 text-left">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="vulns-tbody" class="divide-y divide-slate-100 dark:divide-slate-700"></tbody>
+        </table>
+      </div>
+      <div id="vulns-pagination" class="mt-4 flex justify-center"></div>
+    </main>
+  </div>
+
+  <!-- ═══ VIEW VULNERABILITY MODAL ═══ -->
+  <div id="vuln-view-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeModal('vuln-view-modal')"></div>
+    <div class="relative bg-white dark:bg-slate-800 w-full max-w-2xl mx-4 rounded-2xl shadow-2xl overflow-hidden animate-slide-up max-h-[85vh] flex flex-col">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700 shrink-0">
+        <h3 class="text-lg font-bold text-slate-900 dark:text-white" id="vuln-view-title">Vulnerability</h3>
+        <button onclick="closeModal('vuln-view-modal')" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="px-6 py-5 overflow-y-auto flex-1" id="vuln-view-body"></div>
+    </div>
+  </div>
+
+  <!-- ═══ ADD/EDIT VULNERABILITY MODAL ═══ -->
+  <div id="vuln-form-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeModal('vuln-form-modal')"></div>
+    <div class="relative bg-white dark:bg-slate-800 w-full max-w-2xl mx-4 rounded-2xl shadow-2xl overflow-hidden animate-slide-up max-h-[85vh] flex flex-col">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700 shrink-0">
+        <h3 class="text-lg font-bold text-slate-900 dark:text-white" id="vuln-form-title">Add Vulnerability</h3>
+        <button onclick="closeModal('vuln-form-modal')" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <form id="vuln-form" class="px-6 py-5 overflow-y-auto flex-1 space-y-4">
+        <input type="hidden" id="vf-id" value="" />
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Name *</label>
+            <input id="vf-name" type="text" required class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-blue dark:text-white" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Severity *</label>
+            <select id="vf-severity" required class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-blue dark:text-white">
+              <option value="critical">Critical</option>
+              <option value="high">High</option>
+              <option value="medium" selected>Medium</option>
+              <option value="low">Low</option>
+              <option value="informational">Informational</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">CVSS Score</label>
+            <input id="vf-cvss" type="number" step="0.1" min="0" max="10" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-blue dark:text-white" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">CWE ID</label>
+            <input id="vf-cwe" type="text" placeholder="CWE-79" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-blue dark:text-white" />
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Affected Asset</label>
+          <input id="vf-asset" type="text" placeholder="https://example.com/api" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-blue dark:text-white" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Description</label>
+          <textarea id="vf-desc" rows="3" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-blue dark:text-white resize-none"></textarea>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Proof / Evidence</label>
+          <textarea id="vf-proof" rows="3" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-blue dark:text-white resize-none font-mono text-xs"></textarea>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Remediation</label>
+          <textarea id="vf-remediation" rows="2" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-blue dark:text-white resize-none"></textarea>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">References (one per line)</label>
+          <textarea id="vf-refs" rows="2" placeholder="https://cve.mitre.org/..." class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-blue dark:text-white resize-none"></textarea>
+        </div>
+      </form>
+      <div class="px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex justify-end gap-3 shrink-0">
+        <button onclick="closeModal('vuln-form-modal')" class="px-4 py-2 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">Cancel</button>
+        <button type="submit" form="vuln-form" class="bg-brand-blue text-white px-6 py-2 rounded-xl text-sm font-bold hover:opacity-90 transition-opacity" id="vuln-form-submit">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CHANGE SEVERITY MODAL ═══ -->
+  <div id="severity-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeModal('severity-modal')"></div>
+    <div class="relative bg-white dark:bg-slate-800 w-full max-w-sm mx-4 rounded-2xl shadow-2xl overflow-hidden animate-slide-up">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+        <h3 class="text-lg font-bold text-slate-900 dark:text-white">Change Severity</h3>
+        <button onclick="closeModal('severity-modal')" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="px-6 py-5">
+        <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">Select new severity for this vulnerability:</p>
+        <div class="flex flex-wrap gap-2" id="severity-buttons"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/components.js"></script>
+  <script>
+    if (!requireAuth()) throw '';
+
+    const reportId = new URLSearchParams(window.location.search).get('id');
+    if (!reportId) { window.location.href = 'Report.html'; throw ''; }
+
+    renderSidebar('Reports');
+    renderHeader('Report Detail', 'View report and manage vulnerabilities.',
+      `<a href="Report.html" class="px-4 py-2.5 rounded-xl text-sm font-bold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors flex items-center gap-2">
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+        Back
+      </a>
+      <button onclick="exportPdf()" class="bg-gradient-to-r from-brand-blue to-brand-cyan text-white px-4 py-2.5 rounded-xl text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2">
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+        Export PDF
+      </button>`
+    );
+
+    let vulnPage = 1;
+    let changeSevVulnId = null;
+
+    loadReport();
+    loadVulns();
+
+    async function loadReport() {
+      try {
+        const { report: r } = await API.reports.show(reportId);
+        const vulns = Array.isArray(r.vulnerabilities) ? r.vulnerabilities : [];
+        const parsedCount = (value) => {
+          const num = Number(value);
+          return Number.isFinite(num) ? num : 0;
+        };
+        const computedSeverity = vulns.reduce((acc, v) => {
+          const sev = (v?.severity || '').toLowerCase();
+          if (Object.prototype.hasOwnProperty.call(acc, sev)) acc[sev] += 1;
+          return acc;
+        }, { critical: 0, high: 0, medium: 0, low: 0, informational: 0 });
+        const sevStats = {
+          critical: parsedCount(r.severity_breakdown?.critical ?? computedSeverity.critical),
+          high: parsedCount(r.severity_breakdown?.high ?? computedSeverity.high),
+          medium: parsedCount(r.severity_breakdown?.medium ?? computedSeverity.medium),
+          low: parsedCount(r.severity_breakdown?.low ?? computedSeverity.low),
+          informational: parsedCount(r.severity_breakdown?.informational ?? r.severity_breakdown?.info ?? computedSeverity.informational),
+        };
+        const totalVulns = parsedCount(r.vulnerabilities_count ?? r.vuln_count ?? vulns.length);
+        const criticalCount = parsedCount(r.critical_count ?? sevStats.critical);
+        const startedAt = r.started_at || r.scan_date || r.created_at;
+        const completedAt = r.completed_at || r.scan_date || r.updated_at;
+        document.title = `Bingo Agent | ${r.name}`;
+
+        document.getElementById('report-meta').innerHTML = `
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div>
+              <span class="text-xs font-bold text-slate-400 uppercase">Report Name</span>
+              <p class="text-sm font-bold text-slate-900 dark:text-white mt-1">${escHtml(r.name)}</p>
+            </div>
+            <div>
+              <span class="text-xs font-bold text-slate-400 uppercase">Target</span>
+              <p class="text-sm font-semibold text-slate-700 dark:text-slate-300 mt-1">${escHtml(r.target)}</p>
+            </div>
+            <div>
+              <span class="text-xs font-bold text-slate-400 uppercase">Scan Type</span>
+              <p class="text-sm font-semibold text-slate-700 dark:text-slate-300 mt-1 uppercase">${escHtml(r.scan_type || '—')}</p>
+            </div>
+            <div>
+              <span class="text-xs font-bold text-slate-400 uppercase">Status</span>
+              <div class="mt-1">${statusBadge(r.status)}</div>
+            </div>
+            <div>
+              <span class="text-xs font-bold text-slate-400 uppercase">Started At</span>
+              <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">${formatDateTime(startedAt)}</p>
+            </div>
+            <div>
+              <span class="text-xs font-bold text-slate-400 uppercase">Completed At</span>
+              <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">${formatDateTime(completedAt)}</p>
+            </div>
+            <div>
+              <span class="text-xs font-bold text-slate-400 uppercase">Total Vulns</span>
+              <p class="text-2xl font-bold text-brand-blue mt-1">${totalVulns}</p>
+            </div>
+            <div>
+              <span class="text-xs font-bold text-slate-400 uppercase">Critical</span>
+              <p class="text-2xl font-bold ${criticalCount > 0 ? 'text-red-600' : 'text-emerald-600'} mt-1">${criticalCount}</p>
+            </div>
+          </div>
+          ${(r.executive_summary || r.notes) ? `<div class="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700"><span class="text-xs font-bold text-slate-400 uppercase">Executive Summary</span><p class="text-sm text-slate-700 dark:text-slate-300 mt-2 leading-relaxed">${escHtml(r.executive_summary || r.notes)}</p></div>` : ''}`;
+
+        const sevOrder = ['critical','high','medium','low','informational'];
+        const sevColors = {
+          critical: 'border-red-200 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10 text-red-800 dark:text-red-400',
+          high: 'border-orange-200 dark:border-orange-500/30 bg-orange-50 dark:bg-orange-500/10 text-orange-800 dark:text-orange-400',
+          medium: 'border-yellow-200 dark:border-yellow-500/30 bg-yellow-50 dark:bg-yellow-500/10 text-yellow-800 dark:text-yellow-400',
+          low: 'border-emerald-200 dark:border-emerald-500/30 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-800 dark:text-emerald-400',
+          informational: 'border-blue-200 dark:border-blue-500/30 bg-blue-50 dark:bg-blue-500/10 text-blue-800 dark:text-blue-400',
+        };
+        document.getElementById('severity-stats').innerHTML = sevOrder.map(s =>
+          `<div class="border rounded-2xl p-4 text-center ${sevColors[s]}">
+            <p class="text-2xl font-bold">${sevStats[s] || 0}</p>
+            <p class="text-xs font-bold uppercase mt-1">${s}</p>
+          </div>`
+        ).join('');
+
+      } catch (err) {
+        document.getElementById('report-meta').innerHTML = '<div class="text-center py-12 text-red-400 font-bold">Failed to load report.</div>';
+      }
+    }
+
+    async function loadVulns() {
+      const tbody = document.getElementById('vulns-tbody');
+      tbody.innerHTML = `<tr><td colspan="6" class="text-center py-12 text-slate-400">Loading vulnerabilities...</td></tr>`;
+      try {
+        const params = `page=${vulnPage}`;
+        const res = await API.vulns.listForReport(reportId, params);
+        const vulnsData = res.vulnerabilities;
+        const vulns = Array.isArray(vulnsData) ? vulnsData : (vulnsData?.data || []);
+
+        const table = document.querySelector('#vulns-tbody')?.closest('table') || document.querySelector('table');
+        const wrapper = table.parentElement;
+
+        if (!vulns.length) {
+          wrapper.innerHTML = `
+            <table class="w-full text-sm">
+              <thead class="bg-slate-50 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider text-xs border-b border-slate-200 dark:border-slate-700">
+                <tr><th class="p-4 text-left">Name</th><th class="p-4 text-left">Severity</th><th class="p-4 text-left">CVSS</th><th class="p-4 text-left">Asset</th><th class="p-4 text-left">False Positive</th><th class="p-4 text-left">Actions</th></tr>
+              </thead>
+              <tbody id="vulns-tbody" class="divide-y divide-slate-100 dark:divide-slate-700">
+                <tr><td colspan="6" class="text-center py-12 text-slate-400">No vulnerabilities found</td></tr>
+              </tbody>
+            </table>`;
+        } else {
+          wrapper.innerHTML = `
+            <table class="w-full text-sm">
+              <thead class="bg-slate-50 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider text-xs border-b border-slate-200 dark:border-slate-700">
+                <tr><th class="p-4 text-left">Name</th><th class="p-4 text-left">Severity</th><th class="p-4 text-left">CVSS</th><th class="p-4 text-left">Asset</th><th class="p-4 text-left">False Positive</th><th class="p-4 text-left">Actions</th></tr>
+              </thead>
+              <tbody id="vulns-tbody" class="divide-y divide-slate-100 dark:divide-slate-700">
+                ${vulns.map(v => `
+                  <tr class="hover:bg-blue-50/50 dark:hover:bg-slate-700/30 transition-colors">
+                    <td class="p-4">
+                      <button onclick="viewVuln('${v.id}')" class="font-bold text-brand-blue hover:underline text-left">${escHtml(v.name)}</button>
+                      ${v.cwe_id ? `<p class="text-[10px] text-slate-400 mt-0.5">${escHtml(v.cwe_id)}</p>` : ''}
+                      ${(v.references && v.references.length && /^https?:\/\//.test(v.references[0])) ? `<a href="${escHtml(v.references[0])}" target="_blank" rel="noopener" class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline mt-0.5 inline-block">▶ Reproduce (PoC)</a>` : ''}
+                    </td>
+                    <td class="p-4">${severityBadge(v.severity)}</td>
+                    <td class="p-4 font-semibold ${v.cvss_score >= 9 ? 'text-red-600' : v.cvss_score >= 7 ? 'text-orange-600' : 'text-slate-600 dark:text-slate-400'}">${v.cvss_score ?? '—'}</td>
+                    <td class="p-4 text-slate-500 dark:text-slate-400 text-xs max-w-[200px] truncate">${escHtml(v.affected_asset || '—')}</td>
+                    <td class="p-4">${v.status === 'false_positive'
+                      ? '<span class="text-xs font-bold text-emerald-600 dark:text-emerald-400">FP</span>'
+                      : '<span class="text-xs text-slate-400">—</span>'}</td>
+                    <td class="p-4">
+                      <div class="flex gap-1">
+                        <button onclick="viewVuln('${v.id}')" class="px-2 py-1 rounded-lg text-xs font-bold text-brand-blue bg-blue-50 dark:bg-blue-500/10 hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-colors" title="View">View</button>
+                        <button onclick="editVuln('${v.id}')" class="px-2 py-1 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors" title="Edit">Edit</button>
+                        <button onclick="openSeverityModal('${v.id}')" class="px-2 py-1 rounded-lg text-xs font-bold text-yellow-700 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-500/10 hover:bg-yellow-100 transition-colors" title="Change Severity">Sev</button>
+                        <button onclick="toggleFP('${v.id}')" class="px-2 py-1 rounded-lg text-xs font-bold ${v.status === 'false_positive' ? 'text-red-600 bg-red-50 dark:bg-red-500/10' : 'text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10'} hover:opacity-80 transition-colors" title="Mark False Positive">${v.status === 'false_positive' ? 'FP' : 'Mark FP'}</button>
+                        <button onclick="deleteVuln('${v.id}')" class="px-2 py-1 rounded-lg text-xs font-bold text-red-600 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 transition-colors" title="Delete">Del</button>
+                      </div>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>`;
+        }
+        const pageMeta = Array.isArray(vulnsData) ? null : vulnsData;
+        renderPagination(document.getElementById('vulns-pagination'), pageMeta, (p) => { vulnPage = p; loadVulns(); });
+      } catch (err) { showToast('Failed to load vulnerabilities', 'error'); }
+    }
+
+    async function viewVuln(id) {
+      document.getElementById('vuln-view-title').textContent = 'Loading…';
+      document.getElementById('vuln-view-body').innerHTML = '';
+      openModal('vuln-view-modal');
+
+      try {
+        const { vulnerability: v } = await API.vulns.show(id);
+        document.getElementById('vuln-view-title').textContent = v.name;
+
+        let html = `
+        <div class="grid grid-cols-2 gap-4 mb-6 text-sm">
+          <div><span class="text-slate-400 text-xs font-bold uppercase">Severity</span><div class="mt-1">${severityBadge(v.severity)}</div></div>
+          <div><span class="text-slate-400 text-xs font-bold uppercase">CVSS Score</span><p class="mt-1 font-bold text-lg">${v.cvss_score ?? '—'}</p></div>
+          <div><span class="text-slate-400 text-xs font-bold uppercase">CWE ID</span><p class="mt-1 font-semibold">${escHtml(v.cwe_id || '—')}</p></div>
+          <div><span class="text-slate-400 text-xs font-bold uppercase">Affected Asset</span><p class="mt-1 font-semibold break-all">${escHtml(v.affected_asset || '—')}</p></div>
+          <div><span class="text-slate-400 text-xs font-bold uppercase">False Positive</span><p class="mt-1 font-semibold">${v.status === 'false_positive' ? 'Yes' : 'No'}</p></div>
+          <div><span class="text-slate-400 text-xs font-bold uppercase">Discovered</span><p class="mt-1 font-semibold">${formatDateTime(v.created_at)}</p></div>
+        </div>`;
+
+        if (v.description) html += `<div class="mb-5"><h4 class="text-xs font-bold text-slate-400 uppercase mb-2">Description</h4><p class="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">${escHtml(v.description)}</p></div>`;
+        if (v.payload) html += `<div class="mb-5"><h4 class="text-xs font-bold text-slate-400 uppercase mb-2">Payload</h4><pre class="text-xs bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 p-4 rounded-xl overflow-x-auto text-red-700 dark:text-red-300 whitespace-pre-wrap break-all">${escHtml(v.payload)}</pre></div>`;
+        if (v.evidence) html += `<div class="mb-5"><h4 class="text-xs font-bold text-slate-400 uppercase mb-2">Proof / Evidence</h4><pre class="text-xs bg-slate-50 dark:bg-slate-900 p-4 rounded-xl overflow-x-auto text-slate-600 dark:text-slate-400 whitespace-pre-wrap">${escHtml(v.evidence)}</pre></div>`;
+        if (v.remediation) html += `<div class="mb-5"><h4 class="text-xs font-bold text-slate-400 uppercase mb-2">Remediation</h4><p class="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">${escHtml(v.remediation)}</p></div>`;
+        if (v.references && v.references.length) {
+          html += `<div class="mb-5"><h4 class="text-xs font-bold text-slate-400 uppercase mb-2">References</h4><ul class="space-y-1">${v.references.map(ref => `<li><a href="${escHtml(ref)}" target="_blank" class="text-sm text-brand-blue hover:underline break-all">${escHtml(ref)}</a></li>`).join('')}</ul></div>`;
+        }
+
+        document.getElementById('vuln-view-body').innerHTML = html;
+      } catch { showToast('Failed to load vulnerability', 'error'); closeModal('vuln-view-modal'); }
+    }
+
+    document.getElementById('btn-add-vuln').addEventListener('click', () => {
+      document.getElementById('vuln-form-title').textContent = 'Add Vulnerability';
+      document.getElementById('vf-id').value = '';
+      document.getElementById('vuln-form').reset();
+      document.getElementById('vf-severity').value = 'medium';
+      openModal('vuln-form-modal');
+    });
+
+    async function editVuln(id) {
+      try {
+        const { vulnerability: v } = await API.vulns.show(id);
+        document.getElementById('vuln-form-title').textContent = 'Edit Vulnerability';
+        document.getElementById('vf-id').value = v.id;
+        document.getElementById('vf-name').value = v.name || '';
+        document.getElementById('vf-severity').value = v.severity || 'medium';
+        document.getElementById('vf-cvss').value = v.cvss_score || '';
+        document.getElementById('vf-cwe').value = v.cwe_id || '';
+        document.getElementById('vf-asset').value = v.affected_asset || '';
+        document.getElementById('vf-desc').value = v.description || '';
+        document.getElementById('vf-proof').value = v.evidence || '';
+        document.getElementById('vf-remediation').value = v.remediation || '';
+        document.getElementById('vf-refs').value = (v.references || []).join('\n');
+        openModal('vuln-form-modal');
+      } catch { showToast('Failed to load vulnerability', 'error'); }
+    }
+
+    document.getElementById('vuln-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('vf-id').value;
+      const refs = document.getElementById('vf-refs').value.split('\n').map(r => r.trim()).filter(Boolean);
+      const data = {
+        name: document.getElementById('vf-name').value,
+        severity: document.getElementById('vf-severity').value,
+        cvss_score: document.getElementById('vf-cvss').value || null,
+        cwe_id: document.getElementById('vf-cwe').value || null,
+        affected_asset: document.getElementById('vf-asset').value || null,
+        description: document.getElementById('vf-desc').value || null,
+        evidence: document.getElementById('vf-proof').value || null,
+        remediation: document.getElementById('vf-remediation').value || null,
+        references: refs.length ? refs : null,
+      };
+
+      try {
+        if (id) {
+          await API.vulns.update(id, data);
+          showToast('Vulnerability updated');
+        } else {
+          await API.vulns.create(reportId, data);
+          showToast('Vulnerability added');
+        }
+        closeModal('vuln-form-modal');
+        loadVulns();
+        loadReport();
+      } catch (err) {
+        const msg = err.errors ? Object.values(err.errors).flat().join(', ') : (err.message || 'Save failed');
+        showToast(msg, 'error');
+      }
+    });
+
+    function openSeverityModal(vulnId) {
+      changeSevVulnId = vulnId;
+      const levels = ['critical','high','medium','low','informational'];
+      const colors = {
+        critical: 'border-red-200 bg-red-50 text-red-700 hover:bg-red-100',
+        high: 'border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100',
+        medium: 'border-yellow-200 bg-yellow-50 text-yellow-700 hover:bg-yellow-100',
+        low: 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100',
+        informational: 'border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100',
+      };
+      document.getElementById('severity-buttons').innerHTML = levels.map(s =>
+        `<button onclick="changeSeverity('${s}')" class="px-4 py-2 rounded-xl border font-bold text-sm ${colors[s]} transition-colors capitalize">${s}</button>`
+      ).join('');
+      openModal('severity-modal');
+    }
+
+    async function changeSeverity(sev) {
+      if (!changeSevVulnId) return;
+      try {
+        await API.vulns.changeSeverity(changeSevVulnId, { severity: sev });
+        showToast(`Severity changed to ${sev}`);
+        closeModal('severity-modal');
+        loadVulns();
+        loadReport();
+      } catch (err) { showToast(err.message || 'Failed', 'error'); }
+    }
+
+    async function toggleFP(id) {
+      try {
+        await API.vulns.markFP(id);
+        showToast('False positive toggled');
+        loadVulns();
+      } catch (err) { showToast(err.message || 'Failed', 'error'); }
+    }
+
+    async function deleteVuln(id) {
+      if (!confirm('Delete this vulnerability?')) return;
+      try {
+        await API.vulns.remove(id);
+        showToast('Vulnerability deleted');
+        loadVulns();
+        loadReport();
+      } catch (err) { showToast(err.message || 'Failed', 'error'); }
+    }
+
+    async function exportPdf() {
+      try {
+        const blob = await API.reports.exportPdf(reportId);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = `report-${reportId}.pdf`; a.click();
+        URL.revokeObjectURL(url);
+        showToast('PDF exported');
+      } catch { showToast('Export failed', 'error'); }
+    }
+  </script>
+</body>
+</html>
+

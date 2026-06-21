@@ -1,0 +1,536 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Bingo Agent | Settings</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%230066ff'%3E%3Cpath fill-rule='evenodd' d='M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z' clip-rule='evenodd'/%3E%3C/svg%3E">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { mono: ["Inter", "sans-serif"] },
+          colors: { brand: { blue: "#0066ff", cyan: "#00a8e8", dark: "#0f172a" } },
+          boxShadow: { 'glow': '0 0 20px rgba(0, 102, 255, 0.15)' },
+          animation: { 'slide-up': 'slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1)' },
+          keyframes: { slideUp: { '0%': { transform: 'translateY(20px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } } }
+        },
+      },
+    };
+  </script>
+</head>
+
+<body class="bg-slate-50 dark:bg-slate-900 font-mono text-slate-800 dark:text-slate-200 antialiased selection:bg-brand-blue selection:text-white">
+  <div class="flex h-screen overflow-hidden">
+    <aside id="sidebar" class="w-72 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex flex-col z-20 shadow-xl flex-shrink-0"></aside>
+
+    <main class="flex-1 p-8 lg:p-12 overflow-y-auto">
+      <div id="page-header"></div>
+
+      <!-- Tabs -->
+      <div class="flex border-b border-slate-200 dark:border-slate-700 mb-8">
+        <button data-tab="account" class="tab-btn px-6 py-3 text-sm font-bold border-b-2 border-brand-blue text-brand-blue transition-colors">Account</button>
+        <button data-tab="tokens" class="tab-btn px-6 py-3 text-sm font-bold border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-brand-blue transition-colors">Access Tokens</button>
+        <button data-tab="audit" class="tab-btn px-6 py-3 text-sm font-bold border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-brand-blue transition-colors">Audit Log</button>
+      </div>
+
+      <!-- ═══════════════════════════════════════════
+           TAB 1: ACCOUNT
+           ═══════════════════════════════════════════ -->
+      <div id="panel-account" class="tab-panel space-y-8">
+        <!-- Profile Section -->
+        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm p-6">
+          <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-6">Profile Information</h3>
+          <form id="profile-form" class="space-y-5">
+            <div class="flex items-center gap-6 mb-6">
+              <div class="relative group">
+                <img id="avatar-preview" src="https://ui-avatars.com/api/?name=Admin&background=0066ff&color=fff&size=96&font-size=0.4&bold=true" class="h-20 w-20 rounded-2xl object-cover border-2 border-slate-200 dark:border-slate-600" alt="Avatar" />
+                <label class="absolute inset-0 bg-black/40 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                  <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                  <input type="file" id="avatar-input" accept="image/*" class="hidden" />
+                </label>
+              </div>
+              <div>
+                <p class="font-bold text-slate-900 dark:text-white" id="display-name">Admin</p>
+                <p class="text-sm text-slate-500 dark:text-slate-400" id="display-email">admin@bingo.local</p>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Name</label>
+                <input id="pf-name" type="text" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-blue dark:text-white" />
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Email</label>
+                <input id="pf-email" type="email" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-blue dark:text-white" />
+              </div>
+            </div>
+            <div class="flex justify-end">
+              <button type="submit" class="bg-brand-blue text-white px-6 py-2.5 rounded-xl text-sm font-bold hover:opacity-90 transition-opacity">Save Changes</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Password Section -->
+        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm p-6">
+          <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-6">Change Password</h3>
+          <form id="password-form" class="space-y-4 max-w-md">
+            <div>
+              <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Current Password</label>
+              <input id="pw-current" type="password" required class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-blue dark:text-white" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">New Password</label>
+              <input id="pw-new" type="password" required minlength="8" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-blue dark:text-white" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Confirm New Password</label>
+              <input id="pw-confirm" type="password" required minlength="8" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-blue dark:text-white" />
+            </div>
+            <div class="flex justify-end">
+              <button type="submit" class="bg-red-600 text-white px-6 py-2.5 rounded-xl text-sm font-bold hover:opacity-90 transition-opacity">Update Password</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════
+           TAB 2: ACCESS TOKENS
+           ═══════════════════════════════════════════ -->
+      <div id="panel-tokens" class="tab-panel hidden space-y-6">
+        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm p-6">
+          <div class="flex items-center justify-between mb-6">
+            <div>
+              <h3 class="text-lg font-bold text-slate-900 dark:text-white">Agent Access Tokens</h3>
+              <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Generate tokens for the Bingo agent to communicate with the API.</p>
+            </div>
+            <button id="btn-gen-token" class="bg-brand-blue text-white px-4 py-2.5 rounded-xl text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2">
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+              Generate Token
+            </button>
+          </div>
+
+          <div id="tokens-list" class="space-y-3"></div>
+        </div>
+
+        <!-- New Token Banner (hidden until generated) -->
+        <div id="new-token-banner" class="hidden bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 rounded-2xl p-5">
+          <div class="flex items-start gap-3">
+            <svg class="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+            <div class="flex-1">
+              <p class="text-sm font-bold text-emerald-800 dark:text-emerald-400 mb-1">Token generated! Copy it now — you won't see it again.</p>
+              <div class="flex items-center gap-2 mt-2">
+                <code id="new-token-value" class="flex-1 bg-white dark:bg-slate-900 px-4 py-2.5 rounded-xl text-xs font-mono text-slate-800 dark:text-slate-200 border border-emerald-200 dark:border-emerald-500/30 break-all select-all"></code>
+                <button onclick="copyToken()" class="px-3 py-2.5 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition-colors shrink-0">Copy</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════
+           TAB 3: AUDIT LOG
+           ═══════════════════════════════════════════ -->
+      <div id="panel-audit" class="tab-panel hidden">
+        <div class="flex items-center gap-3 mb-6">
+          <select id="audit-action-filter" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-blue">
+            <option value="">All Actions</option>
+            <option value="login">Login</option>
+            <option value="logout">Logout</option>
+            <option value="create">Create</option>
+            <option value="update">Update</option>
+            <option value="delete">Delete</option>
+          </select>
+          <input id="audit-search" type="text" placeholder="Search logs…" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-blue w-56 placeholder-slate-400 dark:text-white" />
+        </div>
+
+        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-50 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider text-xs border-b border-slate-200 dark:border-slate-700">
+              <tr>
+                <th class="p-4 text-left">Action</th>
+                <th class="p-4 text-left">Description</th>
+                <th class="p-4 text-left">IP Address</th>
+                <th class="p-4 text-left">Date</th>
+              </tr>
+            </thead>
+            <tbody id="audit-tbody" class="divide-y divide-slate-100 dark:divide-slate-700"></tbody>
+          </table>
+        </div>
+        <div id="audit-pagination" class="mt-4 flex justify-center"></div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ═══ GENERATE TOKEN MODAL ═══ -->
+  <div id="gen-token-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeModal('gen-token-modal')"></div>
+    <div class="relative bg-white dark:bg-slate-800 w-full max-w-md mx-4 rounded-2xl shadow-2xl overflow-hidden animate-slide-up">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+        <h3 class="text-lg font-bold text-slate-900 dark:text-white">Generate Access Token</h3>
+        <button onclick="closeModal('gen-token-modal')" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <form id="token-gen-form" class="px-6 py-5 space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Token Name *</label>
+          <input id="tk-name" type="text" required placeholder="e.g. bingo-agent-prod" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-blue dark:text-white" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Expiry *</label>
+          <select id="tk-expiry" required class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-blue dark:text-white">
+            <option value="7">7 days</option>
+            <option value="14" selected>14 days</option>
+            <option value="30">30 days</option>
+          </select>
+        </div>
+      </form>
+      <div class="px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex justify-end gap-3">
+        <button onclick="closeModal('gen-token-modal')" class="px-4 py-2 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">Cancel</button>
+        <button type="submit" form="token-gen-form" class="bg-brand-blue text-white px-6 py-2 rounded-xl text-sm font-bold hover:opacity-90 transition-opacity">Generate</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ EXTEND TOKEN MODAL ═══ -->
+  <div id="extend-token-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeModal('extend-token-modal')"></div>
+    <div class="relative bg-white dark:bg-slate-800 w-full max-w-md mx-4 rounded-2xl shadow-2xl overflow-hidden animate-slide-up">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+        <h3 class="text-lg font-bold text-slate-900 dark:text-white">Extend Token Expiry</h3>
+        <button onclick="closeModal('extend-token-modal')" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <form id="extend-form" class="px-6 py-5 space-y-4">
+        <input type="hidden" id="ext-id" value="" />
+        <div>
+          <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Extend by *</label>
+          <select id="ext-days" required class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-blue dark:text-white">
+            <option value="7" selected>7 days</option>
+            <option value="14">14 days</option>
+            <option value="30">30 days</option>
+          </select>
+        </div>
+      </form>
+      <div class="px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex justify-end gap-3">
+        <button onclick="closeModal('extend-token-modal')" class="px-4 py-2 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">Cancel</button>
+        <button type="submit" form="extend-form" class="bg-brand-blue text-white px-6 py-2 rounded-xl text-sm font-bold hover:opacity-90 transition-opacity">Extend</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/components.js"></script>
+  <script>
+    if (!requireAuth()) throw '';
+
+    renderSidebar('Settings');
+    renderHeader('Settings', 'Manage your account, access tokens, and view audit logs.');
+
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => {
+          b.classList.remove('border-brand-blue', 'text-brand-blue');
+          b.classList.add('border-transparent', 'text-slate-500', 'dark:text-slate-400');
+        });
+        btn.classList.remove('border-transparent', 'text-slate-500', 'dark:text-slate-400');
+        btn.classList.add('border-brand-blue', 'text-brand-blue');
+
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+        document.getElementById(`panel-${btn.dataset.tab}`).classList.remove('hidden');
+
+        if (btn.dataset.tab === 'tokens') loadTokens();
+        if (btn.dataset.tab === 'audit') loadAudit();
+      });
+    });
+
+    const initTab = new URLSearchParams(window.location.search).get('tab');
+    if (initTab) document.querySelector(`.tab-btn[data-tab="${initTab}"]`)?.click();
+
+    /* ═══════════════════════════════════════════════════════
+       ACCOUNT TAB
+       ═══════════════════════════════════════════════════════ */
+    loadProfile();
+
+    function resolveUserPhoto(user) {
+      if (user.photo_url) return user.photo_url;
+      if (user.photo) {
+        if (/^https?:\/\//i.test(user.photo)) return user.photo;
+        return `http://localhost:8000/storage/${String(user.photo).replace(/^\/+/, '')}`;
+      }
+      return `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || 'A')}&background=0066ff&color=fff&size=96&font-size=0.4&bold=true`;
+    }
+
+    async function loadProfile() {
+      try {
+        const { user } = await API.auth.me();
+        document.getElementById('pf-name').value = user.name || '';
+        document.getElementById('pf-email').value = user.email || '';
+        document.getElementById('display-name').textContent = user.name || 'Admin';
+        document.getElementById('display-email').textContent = user.email || '';
+        document.getElementById('avatar-preview').src = resolveUserPhoto(user);
+        localStorage.setItem('bingo_user', JSON.stringify(user));
+      } catch {}
+    }
+
+    document.getElementById('avatar-input').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => { document.getElementById('avatar-preview').src = reader.result; };
+      reader.readAsDataURL(file);
+    });
+
+    document.getElementById('profile-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const data = {
+        name: document.getElementById('pf-name').value,
+        email: document.getElementById('pf-email').value,
+      };
+      const file = document.getElementById('avatar-input').files[0];
+      if (file) data.photo = file;
+
+      try {
+        await API.auth.updateProfile(data);
+        showToast('Profile updated');
+        loadProfile();
+      } catch (err) {
+        const msg = err.errors ? Object.values(err.errors).flat().join(', ') : (err.message || 'Update failed');
+        showToast(msg, 'error');
+      }
+    });
+
+    document.getElementById('password-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const data = {
+        current_password: document.getElementById('pw-current').value,
+        new_password: document.getElementById('pw-new').value,
+        new_password_confirmation: document.getElementById('pw-confirm').value,
+      };
+
+      try {
+        await API.auth.updatePassword(data);
+        showToast('Password updated');
+        document.getElementById('password-form').reset();
+      } catch (err) {
+        const msg = err.errors ? Object.values(err.errors).flat().join(', ') : (err.message || 'Update failed');
+        showToast(msg, 'error');
+      }
+    });
+
+    /* ═══════════════════════════════════════════════════════
+       ACCESS TOKENS TAB
+       ═══════════════════════════════════════════════════════ */
+    async function loadTokens() {
+      const container = document.getElementById('tokens-list');
+      showLoading(container);
+      try {
+        const { tokens } = await API.tokens.list();
+        if (!tokens.length) {
+          container.innerHTML = '<div class="text-center py-12 text-slate-400">No access tokens generated yet.</div>';
+          return;
+        }
+        container.innerHTML = tokens.map(t => {
+          const isExpired = new Date(t.expires_at) < new Date();
+          const expiringSoon = !isExpired && (new Date(t.expires_at) - Date.now()) < 48 * 60 * 60 * 1000;
+          return `
+          <div class="border border-slate-200 dark:border-slate-700 rounded-xl p-4 ${isExpired ? 'opacity-60' : ''} ${expiringSoon ? 'border-yellow-300 dark:border-yellow-500/40' : ''}">
+            <div class="flex items-start justify-between gap-4">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="font-bold text-sm text-slate-900 dark:text-white">${escHtml(t.name)}</span>
+                  ${isExpired ? '<span class="text-[10px] font-bold text-red-500 bg-red-50 dark:bg-red-500/10 px-2 py-0.5 rounded-full">EXPIRED</span>' : ''}
+                  ${expiringSoon ? '<span class="text-[10px] font-bold text-yellow-600 bg-yellow-50 dark:bg-yellow-500/10 px-2 py-0.5 rounded-full">EXPIRING SOON</span>' : ''}
+                </div>
+                <p class="text-xs text-slate-400 font-mono">${escHtml(t.masked_token || '****')}</p>
+                <div class="flex items-center gap-4 mt-2 text-xs text-slate-500 dark:text-slate-400">
+                  <span>Created: ${formatDate(t.created_at)}</span>
+                  <span>Expires: ${formatDate(t.expires_at)}</span>
+                  ${t.last_used_at ? `<span>Last used: ${timeAgo(t.last_used_at)}</span>` : ''}
+                </div>
+              </div>
+              <div class="flex items-center gap-1.5 shrink-0">
+                <button onclick="openExtendModal('${t.id}')" class="px-3 py-1.5 rounded-lg text-xs font-bold text-brand-blue bg-blue-50 dark:bg-blue-500/10 hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-colors" title="Extend">Extend</button>
+                <button onclick="regenerateToken('${t.id}')" class="px-3 py-1.5 rounded-lg text-xs font-bold text-yellow-700 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-500/10 hover:bg-yellow-100 transition-colors" title="Regenerate">Regen</button>
+                <button onclick="revokeToken('${t.id}')" class="px-3 py-1.5 rounded-lg text-xs font-bold text-red-600 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 transition-colors" title="Revoke">Revoke</button>
+              </div>
+            </div>
+          </div>`;
+        }).join('');
+      } catch {
+        container.innerHTML = '<div class="text-center py-12 text-red-400">Unable to load tokens right now.</div>';
+        showToast('Failed to load tokens', 'error');
+      }
+    }
+
+    document.getElementById('btn-gen-token').addEventListener('click', () => {
+      document.getElementById('token-gen-form').reset();
+      document.getElementById('tk-expiry').value = '14';
+      openModal('gen-token-modal');
+    });
+
+    document.getElementById('token-gen-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        const res = await API.tokens.create({
+          name: document.getElementById('tk-name').value,
+          expiration_days: parseInt(document.getElementById('tk-expiry').value),
+        });
+        closeModal('gen-token-modal');
+        showToast('Token generated!');
+
+        const banner = document.getElementById('new-token-banner');
+        document.getElementById('new-token-value').textContent = res.plain_token || '';
+        banner.classList.remove('hidden');
+        banner.scrollIntoView({ behavior: 'smooth' });
+
+        loadTokens();
+      } catch (err) {
+        const msg = err.errors ? Object.values(err.errors).flat().join(', ') : (err.message || 'Generation failed');
+        showToast(msg, 'error');
+      }
+    });
+
+    function copyToken() {
+      const text = document.getElementById('new-token-value').textContent;
+      navigator.clipboard.writeText(text).then(() => showToast('Copied to clipboard'));
+    }
+
+    function openExtendModal(id) {
+      document.getElementById('ext-id').value = id;
+      document.getElementById('ext-days').value = '7';
+      openModal('extend-token-modal');
+    }
+
+    document.getElementById('extend-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('ext-id').value;
+      try {
+        await API.tokens.extend(id, { days: parseInt(document.getElementById('ext-days').value) });
+        closeModal('extend-token-modal');
+        showToast('Token extended');
+        loadTokens();
+      } catch (err) { showToast(err.message || 'Failed', 'error'); }
+    });
+
+    async function regenerateToken(id) {
+      if (!confirm('Regenerate this token? The old token will stop working immediately.')) return;
+      try {
+        const res = await API.tokens.regenerate(id);
+        showToast('Token regenerated!');
+
+        const banner = document.getElementById('new-token-banner');
+        document.getElementById('new-token-value').textContent = res.plain_token || '';
+        banner.classList.remove('hidden');
+        banner.scrollIntoView({ behavior: 'smooth' });
+
+        loadTokens();
+      } catch (err) { showToast(err.message || 'Failed', 'error'); }
+    }
+
+    async function revokeToken(id) {
+      if (!confirm('Revoke this token? This action cannot be undone.')) return;
+      try {
+        await API.tokens.remove(id);
+        showToast('Token revoked');
+        loadTokens();
+      } catch (err) { showToast(err.message || 'Failed', 'error'); }
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       AUDIT LOG TAB
+       ═══════════════════════════════════════════════════════ */
+    let auditPage = 1;
+    let auditTimer;
+
+    function auditActionCategory(action) {
+      const value = (action || '').toLowerCase();
+      if (value === 'login' || value === 'logout') return value;
+      if (value.endsWith('_created')) return 'create';
+      if (value.endsWith('_updated')) return 'update';
+      if (value.endsWith('_deleted')) return 'delete';
+      return 'other';
+    }
+
+    function auditDescription(log) {
+      const details = log.details || {};
+      if (details.note) return details.note;
+      if (details.title) return details.title;
+      if (details.name) return details.name;
+      if (Array.isArray(details.fields) && details.fields.length) {
+        return `Fields: ${details.fields.join(', ')}`;
+      }
+      if (details.new_status) {
+        return `Status: ${details.old_status || '-'} -> ${details.new_status}`;
+      }
+      return log.entity_type || '-';
+    }
+
+    document.getElementById('audit-action-filter').addEventListener('change', () => { auditPage = 1; loadAudit(); });
+    document.getElementById('audit-search').addEventListener('input', () => {
+      clearTimeout(auditTimer);
+      auditTimer = setTimeout(() => { auditPage = 1; loadAudit(); }, 350);
+    });
+
+    async function loadAudit() {
+      const tbody = document.getElementById('audit-tbody');
+      tbody.innerHTML = '<tr><td colspan="4" class="text-center py-12 text-slate-400">Loading audit logs...</td></tr>';
+      try {
+        const params = new URLSearchParams();
+        params.set('page', auditPage);
+        const action = document.getElementById('audit-action-filter').value;
+        const q = document.getElementById('audit-search').value.trim().toLowerCase();
+        const serverFilterableAction = action === 'login' || action === 'logout' ? action : '';
+        if (serverFilterableAction) params.set('action', serverFilterableAction);
+        if (q || action) params.set('per_page', '100');
+
+        const res = await API.activityLogs.list(params.toString());
+        const logs = Array.isArray(res.data) ? res.data : [];
+        const filteredLogs = logs.filter(l => {
+          const category = auditActionCategory(l.action);
+          const matchesAction = !action || category === action || l.action === action;
+          const matchesSearch = !q
+            || (l.action || '').toLowerCase().includes(q)
+            || (l.entity_type || '').toLowerCase().includes(q)
+            || (l.ip_address || '').toLowerCase().includes(q)
+            || JSON.stringify(l.details || {}).toLowerCase().includes(q);
+          return matchesAction && matchesSearch;
+        });
+
+        const actionColors = {
+          login: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-400',
+          logout: 'bg-slate-100 text-slate-600 dark:bg-slate-500/20 dark:text-slate-400',
+          create: 'bg-blue-100 text-blue-800 dark:bg-blue-500/20 dark:text-blue-400',
+          update: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-500/20 dark:text-yellow-400',
+          delete: 'bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-400',
+        };
+
+        if (!filteredLogs.length) {
+          tbody.innerHTML = '<tr><td colspan="4" class="text-center py-12 text-slate-400">No activity logs found</td></tr>';
+        } else {
+          tbody.innerHTML = filteredLogs.map(l => `
+                <tr class="hover:bg-blue-50/50 dark:hover:bg-slate-700/30 transition-colors">
+                  <td class="p-4"><span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold capitalize ${actionColors[auditActionCategory(l.action)] || 'bg-slate-100 text-slate-600'}">${escHtml(l.action)}</span></td>
+                  <td class="p-4 text-sm text-slate-700 dark:text-slate-300 max-w-md truncate">${escHtml(auditDescription(l))}</td>
+                  <td class="p-4 text-xs text-slate-500 dark:text-slate-400 font-mono">${escHtml(l.ip_address || '-')}</td>
+                  <td class="p-4 text-xs text-slate-500 dark:text-slate-400">${formatDateTime(l.created_at)}</td>
+                </tr>
+              `).join('');
+        }
+
+        renderPagination(document.getElementById('audit-pagination'), res, (p) => { auditPage = p; loadAudit(); });
+      } catch {
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center py-12 text-red-400">Unable to load audit logs right now.</td></tr>';
+        document.getElementById('audit-pagination').innerHTML = '';
+        showToast('Failed to load audit logs', 'error');
+      }
+    }
+  </script>
+</body>
+</html>
