@@ -1,0 +1,58 @@
+# ============================================
+# Offensive AI Agent — Configuration
+# ============================================
+# Edit this file to match your environment.
+# API keys go in .env file, not here.
+
+models:
+  # All roles on gpt-4o-mini (150k TPM) to avoid rate limits under parallel agents.
+  # Override any role with a <ROLE>_MODEL env var (e.g. EXPLOIT_MODEL=gpt-4o or gpt-5),
+  # or all roles at once with OFFENSIVE_MODEL. Lower max_parallel_agents if you use a
+  # stronger model with a tighter TPM.
+  router: "gpt-4o-mini"
+  planner: "gpt-4o-mini"
+  exploit: "gpt-4o-mini"
+  recon: "gpt-4o-mini"
+  discovery: "gpt-4o-mini"
+  summarizer: "gpt-4o-mini"
+  # Embeddings
+  embeddings: "text-embedding-3-small"
+
+paths:
+  knowledge_base: "./knowledge_base"
+  chroma_db: "./chroma_db"
+  output_dir: "./output"
+  wordlists:
+    # SecLists base: D:\Study\Graduation\Github\SecLists
+    # Directory / content discovery
+    common: "D:/Study/Graduation/Github/SecLists/Discovery/Web-Content/common.txt"
+    big: "D:/Study/Graduation/Github/SecLists/Discovery/Web-Content/big.txt"
+    raft_medium_dirs: "D:/Study/Graduation/Github/SecLists/Discovery/Web-Content/raft-medium-directories.txt"
+    api_endpoints: "D:/Study/Graduation/Github/SecLists/Discovery/Web-Content/common-api-endpoints-mazen160.txt"
+    # DNS / subdomain enumeration
+    dns: "D:/Study/Graduation/Github/SecLists/Discovery/DNS/subdomains-top1million-5000.txt"
+    dns_large: "D:/Study/Graduation/Github/SecLists/Discovery/DNS/subdomains-top1million-20000.txt"
+    # Passwords / brute-force
+    passwords_top10k: "D:/Study/Graduation/Github/SecLists/Passwords/Common-Credentials/10k-most-common.txt"
+    passwords_top100k: "D:/Study/Graduation/Github/SecLists/Passwords/Common-Credentials/100k-most-used-passwords-NCSC.txt"
+    # Fuzzing payloads
+    sqli: "D:/Study/Graduation/Github/SecLists/Fuzzing/Databases/SQLi/Generic-SQLi.txt"
+    xss: "D:/Study/Graduation/Github/SecLists/Fuzzing/XSS/human-friendly/XSS-Jhaddix.txt"
+    lfi: "D:/Study/Graduation/Github/SecLists/Fuzzing/LFI/LFI-Jhaddix.txt"
+    command_injection: "D:/Study/Graduation/Github/SecLists/Fuzzing/command-injection-commix.txt"
+
+agent_limits:
+  recon_timeout: 300
+  exploit_max_iterations: 22
+  exploit_max_seconds: 240
+  discovery_timeout: 60
+  planner_timeout: 60
+  max_parallel_agents: 3
+  command_timeout: 60
+  max_output_length: 10000
+
+reporting:
+  enabled: true
+  api_url: "http://localhost:8000/api"
+  format: "json"
+  # api_key loaded from .env as REPORTING_API_KEY (must be a bingo_ak_... access token)

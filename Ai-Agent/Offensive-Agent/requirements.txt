@@ -1,0 +1,21 @@
+# Offensive Agent dependencies.
+# NOTE: the agents use FAISS (langchain-community) for RAG and the legacy
+# ReAct agent constructors, which now live in `langchain-classic`. The old
+# chromadb / langchain-chroma pins were never actually imported by the code.
+langchain>=1.0
+langchain-classic>=1.0
+langchain-core>=1.0
+langchain-openai>=1.0
+langchain-community>=0.4
+langchain-experimental>=0.3
+langchain-text-splitters>=1.0
+faiss-cpu>=1.8.0
+rank-bm25>=0.2.2
+openai>=1.50.0
+pydantic>=2.0.0
+pyyaml>=6.0
+python-dotenv>=1.0.0
+playwright>=1.40.0
+loguru>=0.7.0
+httpx>=0.27.0
+requests>=2.31.0
