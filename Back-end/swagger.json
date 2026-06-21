@@ -1,0 +1,853 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Bingo API",
+    "version": "1.0.0",
+    "description": "API documentation for Bingo-Graduation_Project."
+  },
+  "servers": [
+    { "url": "http://localhost:8000/api" }
+  ],
+  "tags": [
+    { "name": "Auth" },
+    { "name": "Access Tokens" },
+    { "name": "Reports" },
+    { "name": "Vulnerabilities" },
+    { "name": "Incidents" },
+    { "name": "Notifications" },
+    { "name": "Dashboard" },
+    { "name": "Search" },
+    { "name": "Activity Logs" },
+    { "name": "Agent" }
+  ],
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Login user",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/LoginRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful login",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AuthResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/auth/forgot-password": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Send password reset email",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ForgotPasswordRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Email sent" },
+          "404": { "description": "User not found" }
+        }
+      }
+    },
+    "/auth/reset-password": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Reset password",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ResetPasswordRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Password reset successful" },
+          "400": { "description": "Invalid token or email" }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Logout user",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Logged out successfully" },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "tags": ["Auth"],
+        "summary": "Get current user",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Current user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": { "user": { "$ref": "#/components/schemas/User" } }
+                }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/auth/profile": {
+      "put": {
+        "tags": ["Auth"],
+        "summary": "Update user profile",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": { "$ref": "#/components/schemas/UpdateProfileRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Profile updated" },
+          "422": { "description": "Validation error" }
+        }
+      }
+    },
+    "/auth/password": {
+      "put": {
+        "tags": ["Auth"],
+        "summary": "Update password",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdatePasswordRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Password updated" },
+          "422": { "description": "Validation error" }
+        }
+      }
+    },
+    "/access-tokens": {
+      "get": {
+        "tags": ["Access Tokens"],
+        "summary": "List access tokens",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "List of access tokens" },
+          "401": { "description": "Unauthorized" }
+        }
+      },
+      "post": {
+        "tags": ["Access Tokens"],
+        "summary": "Create access token",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/StoreAccessTokenRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Access token created" },
+          "422": { "description": "Validation error" }
+        }
+      }
+    },
+    "/access-tokens/{id}": {
+      "delete": {
+        "tags": ["Access Tokens"],
+        "summary": "Delete access token",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Access token deleted" },
+          "404": { "description": "Not found" }
+        }
+      }
+    },
+    "/access-tokens/{id}/regenerate": {
+      "post": {
+        "tags": ["Access Tokens"],
+        "summary": "Regenerate access token",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Access token regenerated" },
+          "404": { "description": "Not found" }
+        }
+      }
+    },
+    "/access-tokens/{id}/extend": {
+      "put": {
+        "tags": ["Access Tokens"],
+        "summary": "Extend access token expiration",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ExtendAccessTokenRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Access token extended" },
+          "404": { "description": "Not found" }
+        }
+      }
+    },
+    "/reports": {
+      "get": {
+        "tags": ["Reports"],
+        "summary": "List reports",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "status", "in": "query", "schema": { "type": "string", "enum": ["open", "in_progress", "completed"] } },
+          { "name": "search", "in": "query", "schema": { "type": "string" } },
+          { "name": "per_page", "in": "query", "schema": { "type": "integer", "minimum": 1 } }
+        ],
+        "responses": {
+          "200": { "description": "Reports list" }
+        }
+      },
+      "post": {
+        "tags": ["Reports"],
+        "summary": "Create report",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/StoreReportRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Report created" },
+          "422": { "description": "Validation error" }
+        }
+      }
+    },
+    "/reports/{id}": {
+      "get": {
+        "tags": ["Reports"],
+        "summary": "Get report",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Report details" } }
+      },
+      "put": {
+        "tags": ["Reports"],
+        "summary": "Update report",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/UpdateReportRequest" } }
+          }
+        },
+        "responses": { "200": { "description": "Report updated" } }
+      },
+      "delete": {
+        "tags": ["Reports"],
+        "summary": "Delete report",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Report deleted" } }
+      }
+    },
+    "/reports/{id}/export": {
+      "get": {
+        "tags": ["Reports"],
+        "summary": "Export report",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "format", "in": "query", "schema": { "type": "string", "enum": ["json", "pdf"], "default": "json" } }
+        ],
+        "responses": {
+          "200": { "description": "Exported report" }
+        }
+      }
+    },
+    "/reports/{reportId}/vulnerabilities": {
+      "get": {
+        "tags": ["Vulnerabilities"],
+        "summary": "List vulnerabilities for report",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "reportId", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Vulnerabilities list" } }
+      },
+      "post": {
+        "tags": ["Vulnerabilities"],
+        "summary": "Create vulnerability for report",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "reportId", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/StoreVulnerabilityRequest" } }
+          }
+        },
+        "responses": { "201": { "description": "Vulnerability created" } }
+      }
+    },
+    "/vulnerabilities/{id}": {
+      "get": {
+        "tags": ["Vulnerabilities"],
+        "summary": "Get vulnerability",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Vulnerability details" } }
+      },
+      "put": {
+        "tags": ["Vulnerabilities"],
+        "summary": "Update vulnerability",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/UpdateVulnerabilityRequest" } }
+          }
+        },
+        "responses": { "200": { "description": "Vulnerability updated" } }
+      },
+      "delete": {
+        "tags": ["Vulnerabilities"],
+        "summary": "Delete vulnerability",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Vulnerability deleted" } }
+      }
+    },
+    "/vulnerabilities/{id}/severity": {
+      "patch": {
+        "tags": ["Vulnerabilities"],
+        "summary": "Change vulnerability severity",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "severity": { "type": "string", "enum": ["critical", "high", "medium", "low", "informational"] }
+                },
+                "required": ["severity"]
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Severity updated" } }
+      }
+    },
+    "/vulnerabilities/{id}/false-positive": {
+      "patch": {
+        "tags": ["Vulnerabilities"],
+        "summary": "Mark vulnerability as false positive",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Marked as false positive" } }
+      }
+    },
+    "/incidents": {
+      "get": {
+        "tags": ["Incidents"],
+        "summary": "List incidents",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "severity", "in": "query", "schema": { "type": "string" } },
+          { "name": "status", "in": "query", "schema": { "type": "string" } },
+          { "name": "search", "in": "query", "schema": { "type": "string" } },
+          { "name": "from", "in": "query", "schema": { "type": "string", "format": "date-time" } },
+          { "name": "to", "in": "query", "schema": { "type": "string", "format": "date-time" } },
+          { "name": "per_page", "in": "query", "schema": { "type": "integer", "minimum": 1 } }
+        ],
+        "responses": { "200": { "description": "Incidents list" } }
+      },
+      "post": {
+        "tags": ["Incidents"],
+        "summary": "Create incident",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/StoreIncidentRequest" } }
+          }
+        },
+        "responses": { "201": { "description": "Incident created" } }
+      }
+    },
+    "/incidents/{id}": {
+      "get": {
+        "tags": ["Incidents"],
+        "summary": "Get incident",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Incident details" } }
+      },
+      "put": {
+        "tags": ["Incidents"],
+        "summary": "Update incident",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/UpdateIncidentRequest" } }
+          }
+        },
+        "responses": { "200": { "description": "Incident updated" } }
+      },
+      "delete": {
+        "tags": ["Incidents"],
+        "summary": "Delete incident",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Incident deleted" } }
+      }
+    },
+    "/incidents/{id}/status": {
+      "patch": {
+        "tags": ["Incidents"],
+        "summary": "Change incident status",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": { "type": "string", "enum": ["new", "investigating", "resolved", "false_positive", "escalated"] }
+                },
+                "required": ["status"]
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Incident status updated" } }
+      }
+    },
+    "/incidents/{id}/notes": {
+      "post": {
+        "tags": ["Incidents"],
+        "summary": "Add incident note",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": { "content": { "type": "string" } },
+                "required": ["content"]
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Note added" } }
+      }
+    },
+    "/notifications": {
+      "get": {
+        "tags": ["Notifications"],
+        "summary": "List unread notifications",
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Notifications list" } }
+      }
+    },
+    "/notifications/count": {
+      "get": {
+        "tags": ["Notifications"],
+        "summary": "Count unread notifications",
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Unread count" } }
+      }
+    },
+    "/notifications/{id}/read": {
+      "patch": {
+        "tags": ["Notifications"],
+        "summary": "Mark notification as read",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Notification marked as read" } }
+      }
+    },
+    "/notifications/read-all": {
+      "post": {
+        "tags": ["Notifications"],
+        "summary": "Mark all notifications as read",
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "All notifications marked as read" } }
+      }
+    },
+    "/dashboard/stats": {
+      "get": {
+        "tags": ["Dashboard"],
+        "summary": "Get dashboard stats",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "range", "in": "query", "schema": { "type": "string", "default": "all" } }
+        ],
+        "responses": { "200": { "description": "Dashboard stats" } }
+      }
+    },
+    "/search": {
+      "get": {
+        "tags": ["Search"],
+        "summary": "Search across resources",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "q", "in": "query", "required": true, "schema": { "type": "string", "minLength": 2, "maxLength": 100 } }
+        ],
+        "responses": { "200": { "description": "Search results" } }
+      }
+    },
+    "/activity-logs": {
+      "get": {
+        "tags": ["Activity Logs"],
+        "summary": "List activity logs",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "action", "in": "query", "schema": { "type": "string" } },
+          { "name": "from", "in": "query", "schema": { "type": "string", "format": "date-time" } },
+          { "name": "to", "in": "query", "schema": { "type": "string", "format": "date-time" } },
+          { "name": "per_page", "in": "query", "schema": { "type": "integer", "minimum": 1 } }
+        ],
+        "responses": { "200": { "description": "Activity logs" } }
+      }
+    },
+    "/agent/heartbeat": {
+      "post": {
+        "tags": ["Agent"],
+        "summary": "Agent heartbeat",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/AgentHeartbeatRequest" } }
+          }
+        },
+        "responses": { "200": { "description": "Heartbeat received" } }
+      }
+    },
+    "/agent/reports": {
+      "post": {
+        "tags": ["Agent"],
+        "summary": "Submit report from agent",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/AgentReportRequest" } }
+          }
+        },
+        "responses": { "201": { "description": "Report submitted" } }
+      }
+    },
+    "/agent/incidents": {
+      "post": {
+        "tags": ["Agent"],
+        "summary": "Submit incident from agent",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/AgentIncidentRequest" } }
+          }
+        },
+        "responses": { "201": { "description": "Incident submitted" } }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "Bearer"
+      }
+    },
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" },
+          "email": { "type": "string", "format": "email" },
+          "photo": { "type": "string", "nullable": true }
+        }
+      },
+      "AuthResponse": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string" },
+          "user": { "$ref": "#/components/schemas/User" },
+          "token": { "type": "string" }
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "properties": {
+          "email": { "type": "string", "format": "email" },
+          "password": { "type": "string" }
+        },
+        "required": ["email", "password"]
+      },
+      "ForgotPasswordRequest": {
+        "type": "object",
+        "properties": {
+          "email": { "type": "string", "format": "email" }
+        },
+        "required": ["email"]
+      },
+      "ResetPasswordRequest": {
+        "type": "object",
+        "properties": {
+          "email": { "type": "string", "format": "email" },
+          "token": { "type": "string" },
+          "password": { "type": "string" },
+          "password_confirmation": { "type": "string" }
+        },
+        "required": ["email", "token", "password", "password_confirmation"]
+      },
+      "UpdateProfileRequest": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "email": { "type": "string", "format": "email" },
+          "photo": { "type": "string", "format": "binary" }
+        }
+      },
+      "UpdatePasswordRequest": {
+        "type": "object",
+        "properties": {
+          "current_password": { "type": "string" },
+          "new_password": { "type": "string" },
+          "new_password_confirmation": { "type": "string" }
+        },
+        "required": ["current_password", "new_password", "new_password_confirmation"]
+      },
+      "StoreAccessTokenRequest": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "expiration_days": { "type": "integer", "enum": [7, 14, 30] }
+        },
+        "required": ["name", "expiration_days"]
+      },
+      "ExtendAccessTokenRequest": {
+        "type": "object",
+        "properties": {
+          "days": { "type": "integer", "enum": [7, 14, 30] }
+        },
+        "required": ["days"]
+      },
+      "StoreReportRequest": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "target": { "type": "string" },
+          "scan_date": { "type": "string", "format": "date-time" },
+          "notes": { "type": "string" },
+          "status": { "type": "string", "enum": ["open", "in_progress", "completed"] }
+        },
+        "required": ["name", "target"]
+      },
+      "UpdateReportRequest": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "target": { "type": "string" },
+          "scan_date": { "type": "string", "format": "date-time" },
+          "notes": { "type": "string" },
+          "status": { "type": "string", "enum": ["open", "in_progress", "completed"] }
+        }
+      },
+      "StoreVulnerabilityRequest": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "severity": { "type": "string", "enum": ["critical", "high", "medium", "low", "informational"] },
+          "description": { "type": "string" },
+          "affected_asset": { "type": "string" },
+          "evidence": { "type": "string" },
+          "remediation": { "type": "string" },
+          "cvss_score": { "type": "number", "minimum": 0, "maximum": 10 },
+          "cwe_id": { "type": "string" },
+          "references": { "type": "array", "items": { "type": "string", "format": "uri" } }
+        },
+        "required": ["name", "severity"]
+      },
+      "UpdateVulnerabilityRequest": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "severity": { "type": "string", "enum": ["critical", "high", "medium", "low", "informational"] },
+          "status": { "type": "string", "enum": ["open", "resolved", "false_positive", "accepted"] },
+          "description": { "type": "string" },
+          "affected_asset": { "type": "string" },
+          "evidence": { "type": "string" },
+          "remediation": { "type": "string" },
+          "cvss_score": { "type": "number", "minimum": 0, "maximum": 10 },
+          "cwe_id": { "type": "string" },
+          "references": { "type": "array", "items": { "type": "string", "format": "uri" } }
+        }
+      },
+      "StoreIncidentRequest": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "severity": { "type": "string", "enum": ["critical", "high", "medium", "low", "informational"] },
+          "source_ip": { "type": "string" },
+          "destination_ip": { "type": "string" },
+          "affected_asset": { "type": "string" },
+          "rule_triggered": { "type": "string" },
+          "raw_log": { "type": "object" },
+          "detected_at": { "type": "string", "format": "date-time" },
+          "action_taken": { "type": "string" }
+        },
+        "required": ["title", "severity"]
+      },
+      "UpdateIncidentRequest": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "severity": { "type": "string", "enum": ["critical", "high", "medium", "low", "informational"] },
+          "status": { "type": "string", "enum": ["new", "investigating", "resolved", "false_positive", "escalated"] },
+          "action_taken": { "type": "string" }
+        }
+      },
+      "AgentHeartbeatRequest": {
+        "type": "object",
+        "properties": {
+          "agent_name": { "type": "string" },
+          "agent_type": { "type": "string", "enum": ["offensive", "defensive"] },
+          "status": { "type": "string", "enum": ["idle", "scanning", "monitoring", "error"] },
+          "metadata": { "type": "object" }
+        },
+        "required": ["agent_name", "agent_type"]
+      },
+      "AgentReportRequest": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "target": { "type": "string" },
+          "scan_date": { "type": "string", "format": "date-time" },
+          "notes": { "type": "string" },
+          "created_by": { "type": "string" },
+          "vulnerabilities": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/AgentVulnerability" }
+          }
+        },
+        "required": ["name", "target"]
+      },
+      "AgentVulnerability": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "severity": { "type": "string", "enum": ["critical", "high", "medium", "low", "informational"] },
+          "description": { "type": "string" },
+          "affected_asset": { "type": "string" },
+          "evidence": { "type": "string" },
+          "remediation": { "type": "string" },
+          "cvss_score": { "type": "number", "minimum": 0, "maximum": 10 },
+          "cwe_id": { "type": "string" },
+          "references": { "type": "array", "items": { "type": "string", "format": "uri" } }
+        },
+        "required": ["name", "severity"]
+      },
+      "AgentIncidentRequest": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "severity": { "type": "string", "enum": ["critical", "high", "medium", "low", "informational"] },
+          "source_ip": { "type": "string" },
+          "destination_ip": { "type": "string" },
+          "affected_asset": { "type": "string" },
+          "rule_triggered": { "type": "string" },
+          "raw_log": { "type": "object" },
+          "detected_at": { "type": "string", "format": "date-time" }
+        },
+        "required": ["title", "severity"]
+      }
+    }
+  }
+}
