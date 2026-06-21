@@ -1,0 +1,35 @@
+# ============================================
+# Bingo Integration Configuration
+# ============================================
+# This file configures how the Behavioral Agent connects to
+# the Offensive Agent, Defensive Agent, and Website API.
+#
+# Environment variable overrides:
+#   BINGO_API_URL        → website.base_url
+#   BINGO_ACCESS_TOKEN   → website.access_token
+#   WAF_MODEL_PATH       → defensive.model_path
+#   WAF_PROXY_PORT       → defensive.proxy_port
+#   WAF_UPSTREAM_PORT    → defensive.upstream_port
+
+website:
+  base_url: "http://localhost:8000/api"
+  # Access token for agent authentication (starts with bingo_ak_...)
+  # Create one via the dashboard: POST /access-tokens
+  access_token: ""
+
+offensive:
+  # Path to the Offensive-Agent config.yaml (relative to this file)
+  config_path: "Offensive-Agent/config.yaml"
+  enabled: true
+
+defensive:
+  # Path to the trained WAF model file
+  model_path: "waf_model.pkl"
+  enabled: true
+  # Proxy settings (WAF sits in front of upstream)
+  # Override with env vars: WAF_PROXY_PORT, WAF_UPSTREAM_PORT
+  proxy_port: 8080
+  upstream_host: "127.0.0.1"
+  upstream_port: 4280
+  block_threats: true
+  threat_threshold: 0.70
